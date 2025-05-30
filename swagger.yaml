@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: 다시 스탠드 API
   description: |
-    다양한 정치적 관점에서 뉴스를 제공하는 서비스의 API입니다.
+    다양한 정치적 관점에서 뉴스를  제공하는 서비스의 API입니다.
     동일 이슈에 대한 다양한 출처의 뉴스를 비교할 수 있게 해주는 플랫폼입니다.
   version: 1.0.0
   contact:
@@ -10,8 +10,6 @@ info:
     email: api@dashistand.com
 
 servers:
-  - url: https://api.dashistand.com/v1
-    description: 메인 프로덕션 서버
   - url: https://api-sandbox.dashistand.com/v1
     description: 샌드박스 테스트 서버
 
