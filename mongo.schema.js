@@ -67,23 +67,24 @@ db.createCollection("issues", {
           maxLength: 500,
           description: "우성향 관점 요약"
         },
+        biasComparison: {
+          bsonType: "string",
+          maxLength: 500,
+          description: "편향 비교 요약"
+        },
         // 통계 정보 (캐시된 값들)
         view: {
           bsonType: "int",
           minimum: 0,
           description: "조회 수"
         },
-        articleCount: {
-          bsonType: "int",
-          minimum: 0,
-          description: "관련 기사 수"
-        },
         coverageSpectrum: {
           bsonType: "object",
           properties: {
             left: { bsonType: "int" },
             center: { bsonType: "int" },
-            right: { bsonType: "int" }
+            right: { bsonType: "int" },
+            total: { bsonType: "int" }
           },
           description: "정치적 스펙트럼 분포"
         },
@@ -114,7 +115,6 @@ db.createCollection("issues", {
           },
           description: "우성향 키워드"
         },
-        // 관련 이슈 IDs (참조)
       },
       additionalProperties: false
     }
@@ -187,31 +187,10 @@ db.createCollection("articles", {
           description: "기사 이미지 URL"
         },
         // 미디어 소스 정보 임베딩 (읽기 최적화)
-        source: {
-          bsonType: "object",
-          required: ["_id", "name", "perspective"],
-          properties: {
-            _id: {
-              bsonType: "string",
-              description: "미디어 소스 ID"
-            },
-            name: {
-              bsonType: "string",
-              minLength: 1,
-              maxLength: 50,
-              description: "미디어 소스 이름"
-            },
-            logoUrl: {
-              bsonType: "string",
-              description: "로고 URL"
-            },
-            perspective: {
-              enum: ["far_left", "left", "center_left", "center", "center_right", "right", "far_right"],
-              description: "미디어 소스 정치적 성향"
-            }
-          },
+        sourceId: {
+          bsonType: "string",
           additionalProperties: false,
-          description: "미디어 소스 정보"
+          description: "미디어 소스 ID"
         }
       },
       additionalProperties: false
@@ -236,10 +215,6 @@ db.createCollection("mediaSources", {
           minLength: 1,
           maxLength: 50,
           description: "미디어 소스 이름"
-        },
-        logoUrl: {
-          bsonType: "string",
-          description: "로고 URL"
         },
         perspective: {
           enum: ["far_left", "left", "center_left", "center", "center_right", "right", "far_right"],
