@@ -124,11 +124,11 @@ jobs:
             print(f'❌ YAML/OpenAPI validation error: {e}')
             sys.exit(1)
         "
-
     - name: Generate Swagger UI with enhanced error handling
       run: |
         SPEC_FILE="${{ steps.find-spec.outputs.spec_file }}"
-        echo "🚀 Generating Swagger UI for: $SPEC_FILE"
+        TIMESTAMP=$(date +%s)
+        echo "🚀 Generating Swagger UI for: $SPEC_FILE with timestamp: $TIMESTAMP"
         
         cat > swagger-ui/index.html << EOF
         <!DOCTYPE html>
@@ -150,11 +150,12 @@ jobs:
         </head>
         <body>
             <div class="info">
-                <strong>📄 Loading API Specification:</strong> ${SPEC_FILE}
+                <strong>📄 Loading API Specification:</strong> ${SPEC_FILE} (v${TIMESTAMP})
             </div>
             <div id="loading" class="loading">
                 <h2>🔄 Loading API Documentation...</h2>
                 <p>Spec file: <strong>${SPEC_FILE}</strong></p>
+                <p>Build time: <strong>${TIMESTAMP}</strong></p>
             </div>
             <div id="swagger-ui"></div>
             
@@ -164,6 +165,7 @@ jobs:
                 window.onload = function() {
                     console.log('🚀 Starting Swagger UI...');
                     console.log('📁 Looking for spec file: ${SPEC_FILE}');
+                    console.log('🕐 Build timestamp: ${TIMESTAMP}');
                     
                     // 로딩 표시 숨기기
                     setTimeout(() => {
@@ -172,7 +174,7 @@ jobs:
                     }, 2000);
                     
                     const ui = SwaggerUIBundle({
-                        url: './${SPEC_FILE}',
+                        url: './${SPEC_FILE}?v=${TIMESTAMP}',
                         dom_id: '#swagger-ui',
                         deepLinking: true,
                         presets: [
@@ -187,7 +189,7 @@ jobs:
                         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'],
                         onComplete: function() {
                             console.log('✅ Swagger UI loaded successfully');
-                            console.log('📊 API spec loaded from: ${SPEC_FILE}');
+                            console.log('📊 API spec loaded from: ${SPEC_FILE}?v=${TIMESTAMP}');
                             document.getElementById('loading').style.display = 'none';
                         },
                         onFailure: function(data) {
@@ -196,10 +198,10 @@ jobs:
                             document.getElementById('swagger-ui').innerHTML = 
                                 '<div class="error">' +
                                 '<h3>❌ Failed to load API specification</h3>' +
-                                '<p><strong>File:</strong> ${SPEC_FILE}</p>' +
+                                '<p><strong>File:</strong> ${SPEC_FILE}?v=${TIMESTAMP}</p>' +
                                 '<p><strong>Error:</strong> ' + JSON.stringify(data) + '</p>' +
                                 '<p>Please check the browser console for more details.</p>' +
-                                '<p>Try accessing the file directly: <a href="./${SPEC_FILE}" target="_blank">${SPEC_FILE}</a></p>' +
+                                '<p>Try accessing the file directly: <a href="./${SPEC_FILE}?v=${TIMESTAMP}" target="_blank">${SPEC_FILE}</a></p>' +
                                 '</div>';
                         }
                     });
@@ -207,7 +209,7 @@ jobs:
                     window.ui = ui;
                     
                     // 파일 존재 확인
-                    fetch('./${SPEC_FILE}')
+                    fetch('./${SPEC_FILE}?v=${TIMESTAMP}')
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error('HTTP ' + response.status + ': ' + response.statusText);
@@ -226,7 +228,7 @@ jobs:
                             document.getElementById('swagger-ui').innerHTML = 
                                 '<div class="error">' +
                                 '<h3>❌ Cannot access OpenAPI file</h3>' +
-                                '<p><strong>File:</strong> ${SPEC_FILE}</p>' +
+                                '<p><strong>File:</strong> ${SPEC_FILE}?v=${TIMESTAMP}</p>' +
                                 '<p><strong>Error:</strong> ' + error.message + '</p>' +
                                 '<p>Make sure the file exists and is accessible.</p>' +
                                 '</div>';
