@@ -28,22 +28,46 @@ jobs:
     - name: Find OpenAPI specification file
       id: find-spec
       run: |
-        # 가능한 OpenAPI 파일명들 확인
+        echo "🔍 Searching for OpenAPI specification files..."
+        echo "📁 Current directory contents:"
+        ls -la
+        
+        echo ""
+        echo "🔎 Checking for specific files:"
+        
+        # 각 파일 존재 여부를 개별적으로 확인
+        for file in "openapi.yml" "openapi.yaml" "swagger.yml" "swagger.yaml"; do
+          if [ -f "$file" ]; then
+            echo "✅ Found: $file"
+          else
+            echo "❌ Not found: $file"
+          fi
+        done
+        
+        echo ""
+        
+        # OpenAPI 파일 찾기
+        SPEC_FILE=""
         if [ -f "openapi.yml" ]; then
-          echo "spec_file=openapi.yml" >> $GITHUB_OUTPUT
+          SPEC_FILE="openapi.yml"
         elif [ -f "openapi.yaml" ]; then
-          echo "spec_file=openapi.yaml" >> $GITHUB_OUTPUT
+          SPEC_FILE="openapi.yaml"
         elif [ -f "swagger.yml" ]; then
-          echo "spec_file=swagger.yml" >> $GITHUB_OUTPUT
+          SPEC_FILE="swagger.yml"
         elif [ -f "swagger.yaml" ]; then
-          echo "spec_file=swagger.yaml" >> $GITHUB_OUTPUT
-        else
+          SPEC_FILE="swagger.yaml"
+        fi
+        
+        if [ -z "$SPEC_FILE" ]; then
           echo "❌ OpenAPI specification file not found!"
-          echo "Looking for: openapi.yml, openapi.yaml, swagger.yml, swagger.yaml"
-          ls -la
+          echo "📋 Looking for: openapi.yml, openapi.yaml, swagger.yml, swagger.yaml"
+          echo "📁 Available files:"
+          find . -name "*.yml" -o -name "*.yaml" -o -name "*.json" | head -10
           exit 1
         fi
-        echo "✅ Found: ${{ steps.find-spec.outputs.spec_file }}"
+        
+        echo "spec_file=$SPEC_FILE" >> $GITHUB_OUTPUT
+        echo "✅ Found OpenAPI file: $SPEC_FILE"
 
     - name: Setup Pages
       uses: actions/configure-pages@v5
@@ -52,9 +76,61 @@ jobs:
       run: mkdir -p swagger-ui
 
     # CDN 방식 - 더 안정적이고 빠름
-    - name: Generate Swagger UI with CDN
+    - name: Validate OpenAPI file
       run: |
-        cat > swagger-ui/index.html << 'EOF'
+        SPEC_FILE="${{ steps.find-spec.outputs.spec_file }}"
+        echo "🔍 Validating OpenAPI file: $SPEC_FILE"
+        
+        # 파일 존재 재확인
+        if [ ! -f "$SPEC_FILE" ]; then
+          echo "❌ OpenAPI file not found: $SPEC_FILE"
+          echo "📁 Current directory:"
+          ls -la
+          exit 1
+        fi
+        
+        # 파일 정보 출력
+        echo "📄 File info:"
+        ls -lh "$SPEC_FILE"
+        
+        # 파일 내용 미리보기
+        echo "📄 File content preview (first 20 lines):"
+        head -20 "$SPEC_FILE"
+        
+        # YAML 문법 검증
+        echo "🔍 Validating YAML syntax..."
+        python3 -c "
+        import yaml
+        import sys
+        try:
+            with open('$SPEC_FILE', 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f)
+            print('✅ YAML syntax is valid')
+            
+            # OpenAPI 기본 구조 확인
+            if 'openapi' in data:
+                print(f'✅ OpenAPI version: {data[\"openapi\"]}')
+            elif 'swagger' in data:
+                print(f'✅ Swagger version: {data[\"swagger\"]}')
+            else:
+                print('⚠️ No openapi or swagger version found')
+                
+            if 'info' in data and 'title' in data['info']:
+                print(f'✅ API title: {data[\"info\"][\"title\"]}')
+            else:
+                print('⚠️ No API title found in info section')
+                
+        except Exception as e:
+            print(f'❌ YAML/OpenAPI validation error: {e}')
+            sys.exit(1)
+        "
+
+    - name: Generate Swagger UI with enhanced error handling
+      run: |
+        SPEC_FILE="${{ steps.find-spec.outputs.spec_file }}"
+        echo "🚀 Generating Swagger UI for: $SPEC_FILE"
+        
+        cat > swagger-ui/index.html << EOF
         <!DOCTYPE html>
         <html lang="ko">
         <head>
@@ -63,22 +139,40 @@ jobs:
             <title>API Documentation</title>
             <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
             <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5.21.0/favicon-32x32.png" sizes="32x32" />
-            <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5.21.0/favicon-16x16.png" sizes="16x16" />
             <style>
                 html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
                 *, *:before, *:after { box-sizing: inherit; }
                 body { margin:0; background: #fafafa; }
+                .loading { text-align: center; padding: 50px; font-family: Arial, sans-serif; }
+                .error { color: red; background: #fee; padding: 10px; margin: 10px; border: 1px solid red; }
+                .info { background: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px; border-radius: 5px; }
             </style>
         </head>
         <body>
+            <div class="info">
+                <strong>📄 Loading API Specification:</strong> ${SPEC_FILE}
+            </div>
+            <div id="loading" class="loading">
+                <h2>🔄 Loading API Documentation...</h2>
+                <p>Spec file: <strong>${SPEC_FILE}</strong></p>
+            </div>
             <div id="swagger-ui"></div>
+            
             <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
             <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
             <script>
                 window.onload = function() {
-                    // API 스펙 파일 경로 설정
+                    console.log('🚀 Starting Swagger UI...');
+                    console.log('📁 Looking for spec file: ${SPEC_FILE}');
+                    
+                    // 로딩 표시 숨기기
+                    setTimeout(() => {
+                        const loading = document.getElementById('loading');
+                        if (loading) loading.style.display = 'none';
+                    }, 2000);
+                    
                     const ui = SwaggerUIBundle({
-                        url: './SPEC_FILE_PLACEHOLDER',
+                        url: './${SPEC_FILE}',
                         dom_id: '#swagger-ui',
                         deepLinking: true,
                         presets: [
@@ -92,28 +186,71 @@ jobs:
                         tryItOutEnabled: true,
                         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'],
                         onComplete: function() {
-                            console.log("✅ Swagger UI loaded successfully");
+                            console.log('✅ Swagger UI loaded successfully');
+                            console.log('📊 API spec loaded from: ${SPEC_FILE}');
+                            document.getElementById('loading').style.display = 'none';
                         },
                         onFailure: function(data) {
-                            console.error("❌ Failed to load API spec:", data);
+                            console.error('❌ Failed to load API spec:', data);
+                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('swagger-ui').innerHTML = 
+                                '<div class="error">' +
+                                '<h3>❌ Failed to load API specification</h3>' +
+                                '<p><strong>File:</strong> ${SPEC_FILE}</p>' +
+                                '<p><strong>Error:</strong> ' + JSON.stringify(data) + '</p>' +
+                                '<p>Please check the browser console for more details.</p>' +
+                                '<p>Try accessing the file directly: <a href="./${SPEC_FILE}" target="_blank">${SPEC_FILE}</a></p>' +
+                                '</div>';
                         }
                     });
+                    
                     window.ui = ui;
+                    
+                    // 파일 존재 확인
+                    fetch('./${SPEC_FILE}')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                            }
+                            console.log('✅ OpenAPI file accessible via HTTP');
+                            console.log('📏 Response status:', response.status);
+                            console.log('📄 Content-Type:', response.headers.get('content-type'));
+                            return response.text();
+                        })
+                        .then(content => {
+                            console.log('📄 OpenAPI file content length:', content.length);
+                            console.log('📄 First 200 chars:', content.substring(0, 200));
+                        })
+                        .catch(error => {
+                            console.error('❌ Cannot fetch OpenAPI file:', error);
+                            document.getElementById('swagger-ui').innerHTML = 
+                                '<div class="error">' +
+                                '<h3>❌ Cannot access OpenAPI file</h3>' +
+                                '<p><strong>File:</strong> ${SPEC_FILE}</p>' +
+                                '<p><strong>Error:</strong> ' + error.message + '</p>' +
+                                '<p>Make sure the file exists and is accessible.</p>' +
+                                '</div>';
+                        });
                 };
             </script>
         </body>
         </html>
         EOF
         
-        # 플레이스홀더를 실제 파일명으로 교체
-        sed -i "s/SPEC_FILE_PLACEHOLDER/${{ steps.find-spec.outputs.spec_file }}/g" swagger-ui/index.html
-        
         # OpenAPI 스펙 파일 복사
-        cp "${{ steps.find-spec.outputs.spec_file }}" swagger-ui/
+        echo "📁 Copying spec file..."
+        cp "$SPEC_FILE" swagger-ui/
         
-        echo "✅ Swagger UI generated successfully"
+        echo "✅ Swagger UI generated with spec file: $SPEC_FILE"
         echo "📁 Generated files:"
         ls -la swagger-ui/
+        
+        echo "📄 Verifying copied spec file:"
+        ls -la "swagger-ui/$SPEC_FILE"
+        
+        # 복사된 파일 내용 확인
+        echo "📄 First few lines of copied file:"
+        head -5 "swagger-ui/$SPEC_FILE"
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
