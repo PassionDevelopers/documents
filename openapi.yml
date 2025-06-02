@@ -100,7 +100,6 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^[a-fA-F0-9]{24}$'
       responses:
         '200':
           description: 성공적으로 이슈 상세 정보를 반환
@@ -286,7 +285,6 @@ components:
           example: "2025-05-20T14:30:00Z"
         issueId:
           type: string
-          pattern: '^[a-fA-F0-9]{24}$'
           example: "507f1f77bcf86cd799439011"
         category:
           type: string
