@@ -191,7 +191,14 @@ db.createCollection("articles", {
           bsonType: "string",
           additionalProperties: false,
           description: "미디어 소스 ID"
-        }
+        },
+        embedding: {
+          bsonType: "array",
+          items: {
+            bsonType: "float64"
+          },
+          description: "기사 임베딩 벡터"
+        },
       },
       additionalProperties: false
     }
