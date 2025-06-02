@@ -284,10 +284,6 @@ components:
           type: string
           format: date-time
           example: "2025-05-20T14:30:00Z"
-        perspective:
-          type: string
-          enum: [far_left, left, center_left, center, center_right, right, far_right]
-          example: "center_right"
         issueId:
           type: string
           pattern: '^[a-fA-F0-9]{24}$'
