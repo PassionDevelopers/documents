@@ -1,0 +1,136 @@
+name: Deploy Swagger UI to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+    paths: [ 'openapi.yml', 'openapi.yaml', 'swagger.yml', 'swagger.yaml' ]
+  workflow_dispatch:
+
+# GitHub Pages 배포에 필요한 권한 설정
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시 배포 방지
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 빌드와 배포를 분리 (권장 패턴)
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Find OpenAPI specification file
+      id: find-spec
+      run: |
+        # 가능한 OpenAPI 파일명들 확인
+        if [ -f "openapi.yml" ]; then
+          echo "spec_file=openapi.yml" >> $GITHUB_OUTPUT
+        elif [ -f "openapi.yaml" ]; then
+          echo "spec_file=openapi.yaml" >> $GITHUB_OUTPUT
+        elif [ -f "swagger.yml" ]; then
+          echo "spec_file=swagger.yml" >> $GITHUB_OUTPUT
+        elif [ -f "swagger.yaml" ]; then
+          echo "spec_file=swagger.yaml" >> $GITHUB_OUTPUT
+        else
+          echo "❌ OpenAPI specification file not found!"
+          echo "Looking for: openapi.yml, openapi.yaml, swagger.yml, swagger.yaml"
+          ls -la
+          exit 1
+        fi
+        echo "✅ Found: ${{ steps.find-spec.outputs.spec_file }}"
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Create Swagger UI directory
+      run: mkdir -p swagger-ui
+
+    # CDN 방식 - 더 안정적이고 빠름
+    - name: Generate Swagger UI with CDN
+      run: |
+        cat > swagger-ui/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="ko">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>API Documentation</title>
+            <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
+            <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5.21.0/favicon-32x32.png" sizes="32x32" />
+            <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5.21.0/favicon-16x16.png" sizes="16x16" />
+            <style>
+                html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+                *, *:before, *:after { box-sizing: inherit; }
+                body { margin:0; background: #fafafa; }
+            </style>
+        </head>
+        <body>
+            <div id="swagger-ui"></div>
+            <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
+            <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
+            <script>
+                window.onload = function() {
+                    // API 스펙 파일 경로 설정
+                    const ui = SwaggerUIBundle({
+                        url: './SPEC_FILE_PLACEHOLDER',
+                        dom_id: '#swagger-ui',
+                        deepLinking: true,
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset
+                        ],
+                        plugins: [
+                            SwaggerUIBundle.plugins.DownloadUrl
+                        ],
+                        layout: "StandaloneLayout",
+                        tryItOutEnabled: true,
+                        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'],
+                        onComplete: function() {
+                            console.log("✅ Swagger UI loaded successfully");
+                        },
+                        onFailure: function(data) {
+                            console.error("❌ Failed to load API spec:", data);
+                        }
+                    });
+                    window.ui = ui;
+                };
+            </script>
+        </body>
+        </html>
+        EOF
+        
+        # 플레이스홀더를 실제 파일명으로 교체
+        sed -i "s/SPEC_FILE_PLACEHOLDER/${{ steps.find-spec.outputs.spec_file }}/g" swagger-ui/index.html
+        
+        # OpenAPI 스펙 파일 복사
+        cp "${{ steps.find-spec.outputs.spec_file }}" swagger-ui/
+        
+        echo "✅ Swagger UI generated successfully"
+        echo "📁 Generated files:"
+        ls -la swagger-ui/
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './swagger-ui'
+
+  # 별도의 배포 job
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    # GitHub Pages 환경 설정
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
