@@ -7,13 +7,11 @@ info:
   version: 1.0.0
   contact:
     name: 패션개발자들
-    email: api@dashistand.com
+    email: api@dasi-stand.com
 
 servers:
-  - url: https://api.dashistand.com/v1
-    description: 메인 프로덕션 서버
-  - url: https://api-sandbox.dashistand.com/v1
-    description: 샌드박스 테스트 서버
+  - url: https://492ipc4742.execute-api.ap-northeast-2.amazonaws.com
+    description: 배성민 사비로 운영되는 테스트 서버
 
 # 키워드
 
@@ -21,8 +19,8 @@ servers:
 x-cors:
   enabled: true
   origins:
-    - "https://www.dashistand.com"
-    - "https://app.dashistand.com"
+    - "https://www.dasi-stand.com"
+    - "https://app.dasi-stand.com"
     - "http://localhost:3000"
   methods:
     - GET
@@ -59,7 +57,7 @@ paths:
             maximum: 50
         - name: lastIssueId
           in: query
-          description: 마지막으로 읽은 이슈의 아이디디
+          description: 마지막으로 읽은 이슈의 아이디
           schema:
             type: string
       responses:
@@ -117,8 +115,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Article'
-                  coverage:
-                    $ref: '#/components/schemas/CoverageStats'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -170,11 +166,6 @@ components:
           type: string
           format: date-time
           example: "2025-05-21T08:15:00Z"
-        articleCount:
-          type: integer
-          description: 해당 이슈 관련 기사 수
-          minimum: 0
-          example: 42
         view: 
           type: integer
           description: 해당 이슈 조회 수
@@ -234,6 +225,12 @@ components:
               minLength: 1
               maxLength: 500
               example: "미국의 중국에 대한 관세 부과는 불공정 무역 관행과 기술 도용에 대응하기 위한 필요한 조치로, 자국 산업 보호와 국가 안보를 위한 결정입니다."
+            biasComparison:
+              type: string
+              description: 이슈에 대한 좌, 중도, 우 성향의 비교
+              minLength: 1
+              maxLength: 1000
+              example: "좌성향은 보호무역주의를 비판하며, 중도는 글로벌 경제에 미치는 영향을 강조하고, 우성향은 국가 안보와 산업 보호의 필요성을 주장합니다."
           required:
             - leftSummary
             - centerSummary
@@ -281,9 +278,6 @@ components:
           maxLength: 50
           description: "기자 이름"
           example: "김기자"
-        sourceId:
-          type: string
-          example: "507f1f77bcf86cd799439013"
         source:
           $ref: '#/components/schemas/MediaSource'
         publishedAt:
@@ -326,10 +320,6 @@ components:
           minLength: 1
           maxLength: 50
           example: "대한일보"
-        logoUrl:
-          type: string
-          format: uri
-          example: "https://example-cdn.com/logos/daehan-news.png"
         perspective:
           type: string
           enum: [far_left, left, center_left, center, center_right, right, far_right]
@@ -375,30 +365,17 @@ components:
           description: 좌성향(far_left, left, center_left) 기사 갯수
         center:
           type: number
-          description: 중도 성향 기사 갯수수
+          description: 중도 성향 기사 갯수
         right:
           type: number
           description: 우성향(center_right, right, far_right) 기사 갯수
+        total:
+          type: integer
+          description: 전체 기사 갯수
       required:
         - left
         - center
         - right
-      additionalProperties: false
-    
-    CoverageStats:
-      type: object
-      properties:
-        totalArticles:
-          type: integer
-          minimum: 0
-          example: 128
-        totalSources:
-          type: integer
-          minimum: 0
-          example: 32
-      required:
-        - totalArticles
-        - totalSources
       additionalProperties: false
 
     Error:
