@@ -251,7 +251,24 @@ db.createCollection("mediaSources", {
         createdAt: {
           bsonType: "date",
           description: "등록 시간"
-        }
+        },
+        category_list: {
+          bsonType: "array",
+          items: {
+            bsonType: "object",
+            properties: {
+              name: {
+                bsonType: "string",
+                minLength: 1,
+                maxLength: 50
+              },
+              url: {
+                bsonType: "string",
+                maxLength: 500
+              }
+            },
+          },
+        },
       },
       additionalProperties: false
     }
