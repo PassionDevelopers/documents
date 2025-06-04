@@ -1,0 +1,3 @@
+[submodule "mongo_schema"]
+	path = mongo_schema
+	url = https://github.com/PassionDevelopers/mongo_schema.git
