@@ -191,21 +191,24 @@ components:
                 type: string
                 minLength: 1
                 maxLength: 50
-                example: "미국"
+              description: "좌성향 키워드"
+              example: ["보호무역주의", "다자간협력"]
             centerKeywords:
               type: array
               items:
                 type: string
                 minLength: 1
                 maxLength: 50
-                example: "중국"
+              description: "중도 키워드"
+              example: ["글로벌경제", "불확실성"]
             rightKeywords:
               type: array
               items:
                 type: string
                 minLength: 1
                 maxLength: 50
-                example: "무역"
+              description: "우성향 키워드"
+              example: ["국가안보", "산업보호"]
             leftSummary:
               type: string
               description: 좌성향 관점에서의 이슈 요약
@@ -228,12 +231,8 @@ components:
               type: string
               description: 이슈에 대한 좌, 중도, 우 성향의 비교
               minLength: 1
-              maxLength: 1000
+              maxLength: 500
               example: "좌성향은 보호무역주의를 비판하며, 중도는 글로벌 경제에 미치는 영향을 강조하고, 우성향은 국가 안보와 산업 보호의 필요성을 주장합니다."
-          required:
-            - leftSummary
-            - centerSummary
-            - rightSummary
           additionalProperties: false
     
     Article:
@@ -253,14 +252,12 @@ components:
           minLength: 1
           maxLength: 300
           example: "미국의 새로운 관세 정책, 글로벌 시장에 미치는 영향"
-        summary:
-          type: string
-          maxLength: 500
-          example: "미국이 중국산 제품에 관세를 부과함에 따라 글로벌 시장에 미치는 파급효과를 분석합니다."
         keywords:
           type: array
           items:
             type: string
+            minLength: 1
+            maxLength: 50
           description: "기사 관련 키워드"
           example: ["관세", "무역", "중국", "미국"]
         content:
@@ -277,8 +274,10 @@ components:
           maxLength: 50
           description: "기자 이름"
           example: "김기자"
-        source:
-          $ref: '#/components/schemas/MediaSource'
+        sourceId:
+          type: string
+          description: "미디어 소스 ID"
+          example: "507f1f77bcf86cd799439013"
         publishedAt:
           type: string
           format: date-time
@@ -295,12 +294,16 @@ components:
           type: string
           format: uri
           example: "https://example-news.com/images/article123.jpg"
+        embedding:
+          type: array
+          items:
+            type: number
+          description: "기사 임베딩 벡터"
       required:
+        - _id
         - title
-        - preview
         - content
         - url
-        - source
       additionalProperties: false
     
     MediaSource:
@@ -316,7 +319,7 @@ components:
           example: "대한일보"
         perspective:
           type: string
-          enum: [far_left, left, center_left, center, center_right, right, far_right]
+          enum: [left, center_left, center, center_right, right]
           example: "center"
       required:
         - _id
@@ -341,13 +344,22 @@ components:
             foundedYear:
               type: integer
               minimum: 1800
-              maximum: 2025
+              maximum: 2026
               example: 1990
             ownershipInfo:
               type: string
               minLength: 1
               maxLength: 200
               example: "대한미디어그룹"
+            createdAt:
+              type: string
+              format: date-time
+              example: "2025-05-20T09:30:00Z"
+            category_list:
+              type: array
+              items:
+                $ref: '#/components/schemas/CategoryInfo'
+              description: "카테고리 목록"
           additionalProperties: false
     
     CoverageSpectrum:
@@ -355,21 +367,26 @@ components:
       description: 이슈에 대한 간략한 정치적 스펙트럼 분포
       properties:
         left:
-          type: number
-          description: 좌성향(far_left, left, center_left) 기사 갯수
+          type: integer
+          minimum: 0
+          description: 좌성향(left, center_left) 기사 갯수
         center:
-          type: number
+          type: integer
+          minimum: 0
           description: 중도 성향 기사 갯수
         right:
-          type: number
-          description: 우성향(center_right, right, far_right) 기사 갯수
+          type: integer
+          minimum: 0
+          description: 우성향(center_right, right) 기사 갯수
         total:
           type: integer
+          minimum: 0
           description: 전체 기사 갯수
       required:
         - left
         - center
         - right
+        - total
       additionalProperties: false
 
     Error:
@@ -404,6 +421,25 @@ components:
       required:
         - code
         - message
+      additionalProperties: false
+
+    CategoryInfo:
+      type: object
+      description: 미디어 소스의 카테고리 정보
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: "정치"
+        url:
+          type: string
+          format: uri
+          maxLength: 500
+          example: "https://example-news.com/politics"
+      required:
+        - name
+        - url
       additionalProperties: false
 
   responses:
