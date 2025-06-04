@@ -127,7 +127,7 @@ db.createCollection("articles", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      required: ["_id", "title", "url", "source", "content", "preview"],
+      required: ["_id", "title", "url", "source", "content"],
       properties: {
         _id: {
           bsonType: "string",
@@ -171,7 +171,7 @@ db.createCollection("articles", {
           description: "기자 이름"
         },
         publishedAt: {
-          bsonType: "date",
+          bsonType: "string",
           description: "발행 시간"
         },
         issueId: {
