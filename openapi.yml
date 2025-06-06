@@ -13,9 +13,7 @@ servers:
   - url: https://492ipc4742.execute-api.ap-northeast-2.amazonaws.com
     description: 배성민 사비로 운영되는 테스트 서버
 
-# 키워드
-
-# CORS 정책 정보 (올바른 위치로 이동)
+# CORS 정책 정보
 x-cors:
   enabled: true
   origins:
@@ -57,7 +55,7 @@ paths:
             maximum: 50
         - name: lastIssueId
           in: query
-          description: 마지막으로 읽은 이슈의 아이디
+          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
           schema:
             type: string
       responses:
@@ -66,20 +64,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  issues:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Issue'
-                  lastIssueId:
-                    type: string
-                    description: 다음 페이지를 위한 마지막 이슈 ID
-                    example: "507f1f77bcf86cd799439011"
-                  hasMore:
-                    type: boolean
-                    description: 다음 페이지가 있는지 여부
-                    example: true
+                $ref: '#/components/schemas/IssuesListResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '429':
@@ -106,14 +91,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  issue:
-                    $ref: '#/components/schemas/DetailedIssue'
-                  articles:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Article'
+                $ref: '#/components/schemas/IssueDetailFullResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -122,135 +100,137 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/ServerError'
+
 components:
   schemas:
+    # 기본 스키마들
     Issue:
       type: object
+      description: 이슈 컬렉션 모델
       properties:
+        _id:
+          type: string
+          description: 이슈 ID
+          example: "507f1f77bcf86cd799439011"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 이슈 제목
+          example: "미국과 중국 간 무역 분쟁 심화"
+        category:
+          type: string
+          enum: ["politics", "economy", "society", "culture", "international", "environment"]
+          description: 이슈 카테고리
+          example: "international"
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: 이슈 요약
+          example: "미국과 중국 간 무역 관계가 악화되며 글로벌 경제에 영향을 미치고 있습니다."
+        imageUrl:
+          type: string
+          format: uri
+          description: 이슈 관련 이미지 URL
+          example: "https://example-cdn.com/images/trade-war.jpg"
         keywords:
           type: array
           items:
             type: string
             minLength: 1
             maxLength: 50
-            example: "미국"
-        _id:
-          type: string
-          example: "507f1f77bcf86cd799439011"
-        title:
-          type: string
-          minLength: 1
-          maxLength: 200
-          example: "미국과 중국 간 무역 분쟁 심화"
-        category:
-          type: string
-          enum: ["politics", "economy", "society", "culture", "international", "environment"]
-          description: "이슈 카테고리"
-          example: "international"
-        summary:
-          type: string
-          minLength: 1
-          maxLength: 500
-          example: "미국과 중국 간 무역 관계가 악화되며 글로벌 경제에 영향을 미치고 있습니다."
-        imageUrl:
-          type: string
-          format: uri
-          description: "이슈 관련 이미지 URL"
-          example: "https://example-cdn.com/images/trade-war.jpg"
+          description: 이슈 관련 키워드
+          example: ["미국", "중국", "무역분쟁"]
         createdAt:
           type: string
           format: date-time
+          description: 생성 시간
           example: "2025-05-20T09:30:00Z"
         updatedAt:
           type: string
           format: date-time
+          description: 업데이트 시간
           example: "2025-05-21T08:15:00Z"
-        view: 
+        # 상세 정보 (DetailedIssue용)
+        leftSummary:
+          type: string
+          maxLength: 500
+          description: 좌성향 관점 요약
+          example: "미국의 중국에 대한 새로운 관세 부과는 보호무역주의적 조치로, 글로벌 협력과 다자간 무역체제를 약화시키는 결정입니다."
+        centerSummary:
+          type: string
+          maxLength: 500
+          description: 중도 관점 요약
+          example: "미국과 중국 간 무역 분쟁이 새로운 관세 부과와 함께 더욱 심화되고 있으며, 이는 글로벌 공급망과 세계 경제에 불확실성을 가중시키고 있습니다."
+        rightSummary:
+          type: string
+          maxLength: 500
+          description: 우성향 관점 요약
+          example: "미국의 중국에 대한 관세 부과는 불공정 무역 관행과 기술 도용에 대응하기 위한 필요한 조치로, 자국 산업 보호와 국가 안보를 위한 결정입니다."
+        biasComparison:
+          type: string
+          maxLength: 500
+          description: 편향 비교 요약
+          example: "좌성향은 보호무역주의를 비판하며, 중도는 글로벌 경제에 미치는 영향을 강조하고, 우성향은 국가 안보와 산업 보호의 필요성을 주장합니다."
+        # 통계 정보
+        view:
           type: integer
-          description: 해당 이슈 조회 수
           minimum: 0
+          description: 조회 수
           example: 1500
         coverageSpectrum:
           $ref: '#/components/schemas/CoverageSpectrum'
+        leftKeywords:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          description: 좌성향 키워드
+          example: ["보호무역주의", "다자간협력"]
+        centerKeywords:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          description: 중도 키워드
+          example: ["글로벌경제", "불확실성"]
+        rightKeywords:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          description: 우성향 키워드
+          example: ["국가안보", "산업보호"]
       required:
         - _id
         - title
         - summary
         - createdAt
-        - updatedAt
       additionalProperties: false
-    
-    DetailedIssue:
-      allOf:
-        - $ref: '#/components/schemas/Issue'
-        - type: object
-          properties:
-            leftKeywords:
-              type: array
-              items:
-                type: string
-                minLength: 1
-                maxLength: 50
-              description: "좌성향 키워드"
-              example: ["보호무역주의", "다자간협력"]
-            centerKeywords:
-              type: array
-              items:
-                type: string
-                minLength: 1
-                maxLength: 50
-              description: "중도 키워드"
-              example: ["글로벌경제", "불확실성"]
-            rightKeywords:
-              type: array
-              items:
-                type: string
-                minLength: 1
-                maxLength: 50
-              description: "우성향 키워드"
-              example: ["국가안보", "산업보호"]
-            leftSummary:
-              type: string
-              description: 좌성향 관점에서의 이슈 요약
-              minLength: 1
-              maxLength: 500
-              example: "미국의 중국에 대한 새로운 관세 부과는 보호무역주의적 조치로, 글로벌 협력과 다자간 무역체제를 약화시키는 결정입니다."
-            centerSummary:
-              type: string
-              description: 중도 관점에서의 이슈 요약
-              minLength: 1
-              maxLength: 500
-              example: "미국과 중국 간 무역 분쟁이 새로운 관세 부과와 함께 더욱 심화되고 있으며, 이는 글로벌 공급망과 세계 경제에 불확실성을 가중시키고 있습니다."
-            rightSummary:
-              type: string
-              description: 우성향 관점에서의 이슈 요약
-              minLength: 1
-              maxLength: 500
-              example: "미국의 중국에 대한 관세 부과는 불공정 무역 관행과 기술 도용에 대응하기 위한 필요한 조치로, 자국 산업 보호와 국가 안보를 위한 결정입니다."
-            biasComparison:
-              type: string
-              description: 이슈에 대한 좌, 중도, 우 성향의 비교
-              minLength: 1
-              maxLength: 500
-              example: "좌성향은 보호무역주의를 비판하며, 중도는 글로벌 경제에 미치는 영향을 강조하고, 우성향은 국가 안보와 산업 보호의 필요성을 주장합니다."
-          additionalProperties: false
-    
+
     Article:
       type: object
+      description: 기사 컬렉션 모델
       properties:
         _id:
           type: string
+          description: 기사 ID
           example: "507f1f77bcf86cd799439012"
         preview:
           type: string
           minLength: 1
           maxLength: 1000
-          description: "기사 프리뷰"
+          description: 기사 프리뷰
           example: "미국이 중국산 제품에 새로운 관세를 부과하기로 결정했습니다..."
         title:
           type: string
           minLength: 1
           maxLength: 300
+          description: 기사 제목
           example: "미국의 새로운 관세 정책, 글로벌 시장에 미치는 영향"
         keywords:
           type: array
@@ -258,169 +238,143 @@ components:
             type: string
             minLength: 1
             maxLength: 50
-          description: "기사 관련 키워드"
+          description: 기사 키워드
           example: ["관세", "무역", "중국", "미국"]
         content:
           type: string
-          description: "기사 본문 내용"
+          description: 기사 본문 내용
           example: "미국 정부가 발표한 새로운 무역 정책에 따르면..."
         url:
           type: string
           format: uri
+          description: 기사 URL
           example: "https://example-news.com/articles/123"
         reporter:
           type: string
           minLength: 1
           maxLength: 50
-          description: "기자 이름"
+          description: 기자 이름
           example: "김기자"
-        sourceId:
-          type: string
-          description: "미디어 소스 ID"
-          example: "507f1f77bcf86cd799439013"
         publishedAt:
           type: string
           format: date-time
+          description: 발행 시간
           example: "2025-05-20T14:30:00Z"
         issueId:
           type: string
+          description: 관련 이슈 ID
           example: "507f1f77bcf86cd799439011"
         category:
           type: string
           enum: ["politics", "economy", "society", "culture", "international", "environment"]
-          description: "기사 카테고리"
+          description: 기사 카테고리
           example: "international"
         imageUrl:
           type: string
           format: uri
+          description: 기사 이미지 URL
           example: "https://example-news.com/images/article123.jpg"
+        sourceId:
+          type: string
+          description: 미디어 소스 ID
+          example: "507f1f77bcf86cd799439013"
         embedding:
           type: array
           items:
             type: number
-          description: "기사 임베딩 벡터"
+          description: 기사 임베딩 벡터
       required:
         - _id
         - title
         - content
         - url
       additionalProperties: false
-    
+
     MediaSource:
       type: object
+      description: 미디어 소스 컬렉션 모델
       properties:
         _id:
           type: string
+          description: 미디어 소스 ID
           example: "507f1f77bcf86cd799439013"
         name:
           type: string
           minLength: 1
           maxLength: 50
+          description: 미디어 소스 이름
           example: "대한일보"
         perspective:
           type: string
-          enum: [left, center_left, center, center_right, right]
+          enum: ["left", "center_left", "center", "center_right", "right"]
+          description: 정치적 성향
           example: "center"
+        description:
+          type: string
+          maxLength: 500
+          description: 미디어 소스 설명
+          example: "1990년에 설립된 대한일보는 한국의 주요 언론사 중 하나입니다."
+        websiteUrl:
+          type: string
+          format: uri
+          description: 웹사이트 URL
+          example: "https://www.daehan-news.kr"
+        foundedYear:
+          type: integer
+          minimum: 1800
+          maximum: 2026
+          description: 설립 연도
+          example: 1990
+        ownershipInfo:
+          type: string
+          maxLength: 200
+          description: 소유권 정보
+          example: "대한미디어그룹"
+        createdAt:
+          type: string
+          format: date-time
+          description: 등록 시간
+          example: "2025-05-20T09:30:00Z"
+        category_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryInfo'
+          description: 카테고리 목록
       required:
         - _id
         - name
         - perspective
       additionalProperties: false
-    
-    DetailedMediaSource:
-      allOf:
-        - $ref: '#/components/schemas/MediaSource'
-        - type: object
-          properties:
-            description:
-              type: string
-              minLength: 1
-              maxLength: 500
-              example: "1990년에 설립된 대한일보는 한국의 주요 언론사 중 하나이며, 정치, 경제, 사회 등 다양한 분야의 뉴스를 다룹니다."
-            websiteUrl:
-              type: string
-              format: uri
-              example: "https://www.daehan-news.kr"
-            foundedYear:
-              type: integer
-              minimum: 1800
-              maximum: 2026
-              example: 1990
-            ownershipInfo:
-              type: string
-              minLength: 1
-              maxLength: 200
-              example: "대한미디어그룹"
-            createdAt:
-              type: string
-              format: date-time
-              example: "2025-05-20T09:30:00Z"
-            category_list:
-              type: array
-              items:
-                $ref: '#/components/schemas/CategoryInfo'
-              description: "카테고리 목록"
-          additionalProperties: false
-    
+
     CoverageSpectrum:
       type: object
-      description: 이슈에 대한 간략한 정치적 스펙트럼 분포
+      description: 정치적 스펙트럼 분포
       properties:
         left:
           type: integer
           minimum: 0
-          description: 좌성향(left, center_left) 기사 갯수
+          description: 좌성향(left, center_left) 기사 개수
+          example: 5
         center:
           type: integer
           minimum: 0
-          description: 중도 성향 기사 갯수
+          description: 중도 성향 기사 개수
+          example: 3
         right:
           type: integer
           minimum: 0
-          description: 우성향(center_right, right) 기사 갯수
+          description: 우성향(center_right, right) 기사 개수
+          example: 4
         total:
           type: integer
           minimum: 0
-          description: 전체 기사 갯수
+          description: 전체 기사 개수
+          example: 12
       required:
         - left
         - center
         - right
         - total
-      additionalProperties: false
-
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          description: 오류 코드
-          example: "INVALID_PARAMETER"
-        message:
-          type: string
-          description: 오류 메시지
-          minLength: 1
-          example: "유효하지 않은 파라미터가 포함되어 있습니다"
-        details:
-          type: array
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-                minLength: 1
-                example: "perspective"
-              message:
-                type: string
-                minLength: 1
-                example: "유효한 정치적 성향 값이 아닙니다."
-            required:
-              - field
-              - message
-            additionalProperties: false
-      required:
-        - code
-        - message
       additionalProperties: false
 
     CategoryInfo:
@@ -431,15 +385,306 @@ components:
           type: string
           minLength: 1
           maxLength: 50
+          description: 카테고리 이름
           example: "정치"
         url:
           type: string
           format: uri
           maxLength: 500
+          description: 카테고리 URL
           example: "https://example-news.com/politics"
       required:
         - name
         - url
+      additionalProperties: false
+
+    # 응답 모델들
+    IssueResponse:
+      type: object
+      description: 이슈 기본 응답 모델 (목록용)
+      properties:
+        _id:
+          type: string
+          description: 이슈 ID
+          example: "507f1f77bcf86cd799439011"
+        title:
+          type: string
+          description: 이슈 제목
+          example: "미국과 중국 간 무역 분쟁 심화"
+        category:
+          type: string
+          enum: ["politics", "economy", "society", "culture", "international", "environment"]
+          description: 이슈 카테고리
+          example: "international"
+        summary:
+          type: string
+          description: 이슈 요약
+          example: "미국과 중국 간 무역 관계가 악화되며 글로벌 경제에 영향을 미치고 있습니다."
+        imageUrl:
+          type: string
+          format: uri
+          description: 이슈 관련 이미지 URL
+          example: "https://example-cdn.com/images/trade-war.jpg"
+        keywords:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          description: 이슈 관련 키워드
+          example: ["미국", "중국", "무역분쟁"]
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성 시간
+          example: "2025-05-20T09:30:00Z"
+        view:
+          type: integer
+          minimum: 0
+          description: 조회 수
+          example: 1500
+        coverageSpectrum:
+          $ref: '#/components/schemas/CoverageSpectrum'
+      required:
+        - _id
+        - title
+        - summary
+        - createdAt
+      additionalProperties: false
+
+    IssueDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/IssueResponse'
+        - type: object
+          description: 이슈 상세 응답 모델
+          properties:
+            leftSummary:
+              type: string
+              description: 좌성향 관점 요약
+              example: "미국의 중국에 대한 새로운 관세 부과는 보호무역주의적 조치입니다."
+            centerSummary:
+              type: string
+              description: 중도 관점 요약
+              example: "미국과 중국 간 무역 분쟁이 더욱 심화되고 있습니다."
+            rightSummary:
+              type: string
+              description: 우성향 관점 요약
+              example: "미국의 중국에 대한 관세 부과는 필요한 조치입니다."
+            biasComparison:
+              type: string
+              description: 편향 비교 요약
+              example: "좌성향은 보호무역주의를 비판하며, 우성향은 국가 안보를 강조합니다."
+            leftKeywords:
+              type: array
+              items:
+                type: string
+                minLength: 1
+                maxLength: 50
+              description: 좌성향 키워드
+              example: ["보호무역주의", "다자간협력"]
+            centerKeywords:
+              type: array
+              items:
+                type: string
+                minLength: 1
+                maxLength: 50
+              description: 중도 키워드
+              example: ["글로벌경제", "불확실성"]
+            rightKeywords:
+              type: array
+              items:
+                type: string
+                minLength: 1
+                maxLength: 50
+              description: 우성향 키워드
+              example: ["국가안보", "산업보호"]
+          additionalProperties: false
+
+    SourceInfo:
+      type: object
+      description: 기사 응답에 포함될 소스 정보
+      properties:
+        _id:
+          type: string
+          description: 미디어 소스 ID
+          example: "507f1f77bcf86cd799439013"
+        name:
+          type: string
+          description: 미디어 소스 이름
+          example: "대한일보"
+        perspective:
+          type: string
+          enum: ["left", "center_left", "center", "center_right", "right"]
+          description: 정치적 성향
+          example: "center"
+      required:
+        - _id
+        - name
+        - perspective
+      additionalProperties: false
+
+    ArticleResponse:
+      type: object
+      description: 기사 응답 모델
+      properties:
+        _id:
+          type: string
+          description: 기사 ID
+          example: "507f1f77bcf86cd799439012"
+        title:
+          type: string
+          description: 기사 제목
+          example: "미국의 새로운 관세 정책, 글로벌 시장에 미치는 영향"
+        preview:
+          type: string
+          description: 기사 프리뷰
+          example: "미국이 중국산 제품에 새로운 관세를 부과하기로 결정했습니다..."
+        keywords:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          description: 기사 키워드
+          example: ["관세", "무역", "중국", "미국"]
+        url:
+          type: string
+          format: uri
+          description: 기사 URL
+          example: "https://example-news.com/articles/123"
+        reporter:
+          type: string
+          description: 기자 이름
+          example: "김기자"
+        publishedAt:
+          type: string
+          format: date-time
+          description: 발행 시간
+          example: "2025-05-20T14:30:00Z"
+        issueId:
+          type: string
+          description: 관련 이슈 ID
+          example: "507f1f77bcf86cd799439011"
+        category:
+          type: string
+          enum: ["politics", "economy", "society", "culture", "international", "environment"]
+          description: 기사 카테고리
+          example: "international"
+        imageUrl:
+          type: string
+          format: uri
+          description: 기사 이미지 URL
+          example: "https://example-news.com/images/article123.jpg"
+        source:
+          $ref: '#/components/schemas/SourceInfo'
+      required:
+        - _id
+        - title
+        - url
+        - source
+      additionalProperties: false
+
+    IssuesListResponse:
+      type: object
+      description: 이슈 목록 응답 모델
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/IssueResponse'
+          description: 이슈 목록
+        hasMore:
+          type: boolean
+          description: 더 많은 데이터가 있는지 여부
+          example: true
+        lastIssueId:
+          type: string
+          description: 마지막 이슈 ID (페이징용)
+          example: "507f1f77bcf86cd799439011"
+      required:
+        - issues
+        - hasMore
+      additionalProperties: false
+
+    IssueDetailFullResponse:
+      type: object
+      description: 이슈 상세 전체 응답 모델
+      properties:
+        issue:
+          $ref: '#/components/schemas/IssueDetailResponse'
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleResponse'
+          description: 관련 기사 목록
+      required:
+        - issue
+        - articles
+      additionalProperties: false
+
+    ErrorDetail:
+      type: object
+      description: 에러 상세 정보
+      properties:
+        field:
+          type: string
+          description: 오류 필드
+          example: "perspective"
+        message:
+          type: string
+          description: 오류 메시지
+          example: "유효한 정치적 성향 값이 아닙니다."
+        value:
+          description: 오류 값
+          example: "invalid_value"
+      required:
+        - field
+        - message
+      additionalProperties: false
+
+    ErrorResponse:
+      type: object
+      description: 에러 응답 모델
+      properties:
+        code:
+          type: string
+          description: 오류 코드
+          example: "INVALID_PARAMETER"
+        message:
+          type: string
+          description: 오류 메시지
+          example: "유효하지 않은 파라미터가 포함되어 있습니다"
+        timestamp:
+          type: string
+          format: date-time
+          description: 오류 발생 시간
+          example: "2025-06-06T12:00:00Z"
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+          description: 오류 상세 정보
+      required:
+        - code
+        - message
+        - timestamp
+      additionalProperties: false
+
+    QueryParams:
+      type: object
+      description: 쿼리 파라미터 검증 모델
+      properties:
+        limit:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 50
+          description: 한 번에 가져올 항목 수
+          example: 10
+        lastIssueId:
+          type: string
+          description: 마지막 이슈 ID (페이징용)
+          example: "507f1f77bcf86cd799439011"
       additionalProperties: false
 
   responses:
@@ -448,15 +693,15 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-    
+            $ref: '#/components/schemas/ErrorResponse'
+
     NotFound:
       description: 리소스를 찾을 수 없음
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-    
+            $ref: '#/components/schemas/ErrorResponse'
+
     TooManyRequests:
       description: 너무 많은 요청
       headers:
@@ -467,11 +712,11 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-    
+            $ref: '#/components/schemas/ErrorResponse'
+
     ServerError:
       description: 서버 오류
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/ErrorResponse'
