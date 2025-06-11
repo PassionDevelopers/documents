@@ -40,7 +40,7 @@ tags:
 paths:
   /issues/hot:
     get:
-      summary: 핫이슈 목록 조회
+      summary: 핫이슈 목록 조회 (미구현)
       description: 현재 가장 주목받는 핫이슈 목록을 반환합니다. 개수가 고정되어 있고 이미지 URL이 포함됩니다.
       tags:
         - 이슈
@@ -64,7 +64,7 @@ paths:
 
   /issues/daily:
     get:
-      summary: 데일리 이슈 목록 조회
+      summary: 데일리 이슈 목록 조회 (미구현)
       description: 현재 일자의 주요 뉴스 이슈 목록을 반환합니다.
       tags:
         - 이슈
@@ -102,7 +102,7 @@ paths:
 
   /issues/for-you:
     get:
-      summary: 맞춤 이슈 목록 조회
+      summary: 맞춤 이슈 목록 조회 (미구현)
       description: 사용자의 정치성향과 관심도에 기반한 맞춤 이슈 목록을 반환합니다.
       tags:
         - 이슈
@@ -140,7 +140,7 @@ paths:
 
   /issues/blind-spot:
     get:
-      summary: 블라인드 스팟 이슈 목록 조회
+      summary: 블라인드 스팟 이슈 목록 조회 (미구현)
       description: 사용자의 정치성향과 반대되는 관점의 이슈들을 제공하여 다양한 시각을 제공합니다.
       tags:
         - 이슈
