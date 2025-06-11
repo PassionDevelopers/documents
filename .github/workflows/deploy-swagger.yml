@@ -1,272 +1,304 @@
-name: Deploy Swagger UI to GitHub Pages
+name: Deploy Multi-Environment Swagger UI to GitHub Pages
 
 on:
   push:
     branches: [ main, master ]
-    paths: [ 'openapi.yml', 'openapi.yaml', 'swagger.yml', 'swagger.yaml' ]
+    paths: [ 'openapi*.yml', 'openapi*.yaml', 'swagger*.yml', 'swagger*.yaml' ]
   workflow_dispatch:
 
-# GitHub Pages 배포에 필요한 권한 설정
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# 동시 배포 방지
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # 빌드와 배포를 분리 (권장 패턴)
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Find OpenAPI specification file
-      id: find-spec
+    - name: Find OpenAPI specification files
+      id: find-specs
       run: |
         echo "🔍 Searching for OpenAPI specification files..."
-        echo "📁 Current directory contents:"
-        ls -la
         
-        echo ""
-        echo "🔎 Checking for specific files:"
+        DEV_FILE=""
+        PROD_FILE=""
         
-        # 각 파일 존재 여부를 개별적으로 확인
-        for file in "openapi.yml" "openapi.yaml" "swagger.yml" "swagger.yaml"; do
+        for file in "openapi-dev.yml" "openapi-dev.yaml"; do
           if [ -f "$file" ]; then
-            echo "✅ Found: $file"
-          else
-            echo "❌ Not found: $file"
+            DEV_FILE="$file"
+            echo "✅ Found dev file: $file"
+            break
           fi
         done
         
-        echo ""
+        for file in "openapi-prod.yml" "openapi-prod.yaml"; do
+          if [ -f "$file" ]; then
+            PROD_FILE="$file"
+            echo "✅ Found prod file: $file"
+            break
+          fi
+        done
         
-        # OpenAPI 파일 찾기
-        SPEC_FILE=""
-        if [ -f "openapi.yml" ]; then
-          SPEC_FILE="openapi.yml"
-        elif [ -f "openapi.yaml" ]; then
-          SPEC_FILE="openapi.yaml"
-        elif [ -f "swagger.yml" ]; then
-          SPEC_FILE="swagger.yml"
-        elif [ -f "swagger.yaml" ]; then
-          SPEC_FILE="swagger.yaml"
-        fi
+        echo "dev_file=$DEV_FILE" >> $GITHUB_OUTPUT
+        echo "prod_file=$PROD_FILE" >> $GITHUB_OUTPUT
         
-        if [ -z "$SPEC_FILE" ]; then
-          echo "❌ OpenAPI specification file not found!"
-          echo "📋 Looking for: openapi.yml, openapi.yaml, swagger.yml, swagger.yaml"
-          echo "📁 Available files:"
-          find . -name "*.yml" -o -name "*.yaml" -o -name "*.json" | head -10
+        if [ -z "$DEV_FILE" ] && [ -z "$PROD_FILE" ]; then
+          echo "❌ No OpenAPI specification files found!"
           exit 1
         fi
-        
-        echo "spec_file=$SPEC_FILE" >> $GITHUB_OUTPUT
-        echo "✅ Found OpenAPI file: $SPEC_FILE"
 
     - name: Setup Pages
       uses: actions/configure-pages@v5
 
-    - name: Create Swagger UI directory
-      run: mkdir -p swagger-ui
-
-    # CDN 방식 - 더 안정적이고 빠름
-    - name: Validate OpenAPI file
+    - name: Create directory structure
       run: |
-        SPEC_FILE="${{ steps.find-spec.outputs.spec_file }}"
-        echo "🔍 Validating OpenAPI file: $SPEC_FILE"
+        mkdir -p swagger-ui/dev
+        mkdir -p swagger-ui/prod
+
+    - name: Generate Development Environment
+      if: steps.find-specs.outputs.dev_file != ''
+      run: |
+        DEV_FILE="${{ steps.find-specs.outputs.dev_file }}"
+        SPEC_FILENAME=$(basename "$DEV_FILE")
         
-        # 파일 존재 재확인
-        if [ ! -f "$SPEC_FILE" ]; then
-          echo "❌ OpenAPI file not found: $SPEC_FILE"
-          echo "📁 Current directory:"
-          ls -la
-          exit 1
+        # Create dev Swagger UI
+        cat > swagger-ui/dev/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다시 스탠드 API Documentation - Development</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
+    <style>
+        .header { background: #1f2937; color: white; padding: 1rem; text-align: center; }
+        .env-badge { background: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 0.375rem; }
+        .nav-links { text-align: center; padding: 1rem; background: #f9fafb; }
+        .nav-links a { margin: 0 1rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; }
+        .nav-links a.active { background: #3b82f6; color: white; border-radius: 0.375rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>다시 스탠드 API Documentation</h1>
+        <span class="env-badge">Development</span>
+    </div>
+    <div class="nav-links">
+        <a href="../">홈</a>
+        <a href="../dev/" class="active">개발 환경</a>
+        <a href="../prod/">프로덕션 환경</a>
+    </div>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: './SPEC_FILE_PLACEHOLDER',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+            layout: "StandaloneLayout"
+        });
+    </script>
+</body>
+</html>
+EOF
+        
+        sed -i "s/SPEC_FILE_PLACEHOLDER/$SPEC_FILENAME/g" swagger-ui/dev/index.html
+        cp "$DEV_FILE" "swagger-ui/dev/$SPEC_FILENAME"
+        echo "✅ Development environment generated"
+
+    - name: Generate Production Environment
+      if: steps.find-specs.outputs.prod_file != ''
+      run: |
+        PROD_FILE="${{ steps.find-specs.outputs.prod_file }}"
+        SPEC_FILENAME=$(basename "$PROD_FILE")
+        
+        # Create prod Swagger UI
+        cat > swagger-ui/prod/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다시 스탠드 API Documentation - Production</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
+    <style>
+        .header { background: #1f2937; color: white; padding: 1rem; text-align: center; }
+        .env-badge { background: #dc2626; color: white; padding: 0.25rem 0.75rem; border-radius: 0.375rem; }
+        .nav-links { text-align: center; padding: 1rem; background: #f9fafb; }
+        .nav-links a { margin: 0 1rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; }
+        .nav-links a.active { background: #3b82f6; color: white; border-radius: 0.375rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>다시 스탠드 API Documentation</h1>
+        <span class="env-badge">Production</span>
+    </div>
+    <div class="nav-links">
+        <a href="../">홈</a>
+        <a href="../dev/">개발 환경</a>
+        <a href="../prod/" class="active">프로덕션 환경</a>
+    </div>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: './SPEC_FILE_PLACEHOLDER',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+            layout: "StandaloneLayout"
+        });
+    </script>
+</body>
+</html>
+EOF
+        
+        sed -i "s/SPEC_FILE_PLACEHOLDER/$SPEC_FILENAME/g" swagger-ui/prod/index.html
+        cp "$PROD_FILE" "swagger-ui/prod/$SPEC_FILENAME"
+        echo "✅ Production environment generated"
+
+    - name: Generate Main Index Page
+      run: |
+        DEV_FILE="${{ steps.find-specs.outputs.dev_file }}"
+        PROD_FILE="${{ steps.find-specs.outputs.prod_file }}"
+        
+        # Create main index page
+        cat > swagger-ui/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다시 스탠드 API Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+        h1 { color: #2d3748; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { color: #718096; font-size: 1.1rem; margin-bottom: 2rem; }
+        .environments { display: grid; gap: 1rem; margin-top: 2rem; }
+        .env-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .env-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .env-card.dev { border-color: #38a169; }
+        .env-card.dev:hover { border-color: #2f855a; background: #f0fff4; }
+        .env-card.prod { border-color: #e53e3e; }
+        .env-card.prod:hover { border-color: #c53030; background: #fff5f5; }
+        .env-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .env-description { color: #718096; margin-bottom: 1rem; }
+        .env-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .badge-dev { background: #c6f6d5; color: #22543d; }
+        .badge-prod { background: #fed7d7; color: #742a2a; }
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        .unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f7fafc;
+        }
+        .unavailable:hover { transform: none; box-shadow: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>다시 스탠드</h1>
+        <p class="subtitle">다양한 관점의 정치 뉴스 API Documentation</p>
+        <div class="environments">
+            DEV_CARD_PLACEHOLDER
+            PROD_CARD_PLACEHOLDER
+        </div>
+        <div class="footer">
+            <p>🔧 개발 환경과 🚀 프로덕션 환경 중 원하는 API 문서를 선택하세요</p>
+            <p><small>Powered by Swagger UI | 패션개발자들</small></p>
+        </div>
+    </div>
+</body>
+</html>
+EOF
+        
+        # Generate environment cards
+        if [ -n "$DEV_FILE" ]; then
+          DEV_CARD='<a href="./dev/" class="env-card dev"><div class="env-title">🔧 개발 환경</div><div class="env-description">개발 및 테스트용 API 스펙</div><span class="env-badge badge-dev">Development</span></a>'
+        else
+          DEV_CARD='<div class="env-card unavailable"><div class="env-title">🔧 개발 환경</div><div class="env-description">개발 환경 API 스펙이 없습니다</div><span class="env-badge badge-dev">Unavailable</span></div>'
         fi
         
-        # 파일 정보 출력
-        echo "📄 File info:"
-        ls -lh "$SPEC_FILE"
+        if [ -n "$PROD_FILE" ]; then
+          PROD_CARD='<a href="./prod/" class="env-card prod"><div class="env-title">🚀 프로덕션 환경</div><div class="env-description">실제 서비스용 API 스펙</div><span class="env-badge badge-prod">Production</span></a>'
+        else
+          PROD_CARD='<div class="env-card unavailable"><div class="env-title">🚀 프로덕션 환경</div><div class="env-description">프로덕션 환경 API 스펙이 없습니다</div><span class="env-badge badge-prod">Unavailable</span></div>'
+        fi
         
-        # 파일 내용 미리보기
-        echo "📄 File content preview (first 20 lines):"
-        head -20 "$SPEC_FILE"
-        
-        # YAML 문법 검증
-        echo "🔍 Validating YAML syntax..."
-        python3 -c "
-        import yaml
-        import sys
-        try:
-            with open('$SPEC_FILE', 'r', encoding='utf-8') as f:
-                data = yaml.safe_load(f)
-            print('✅ YAML syntax is valid')
-            
-            # OpenAPI 기본 구조 확인
-            if 'openapi' in data:
-                print(f'✅ OpenAPI version: {data[\"openapi\"]}')
-            elif 'swagger' in data:
-                print(f'✅ Swagger version: {data[\"swagger\"]}')
-            else:
-                print('⚠️ No openapi or swagger version found')
-                
-            if 'info' in data and 'title' in data['info']:
-                print(f'✅ API title: {data[\"info\"][\"title\"]}')
-            else:
-                print('⚠️ No API title found in info section')
-                
-        except Exception as e:
-            print(f'❌ YAML/OpenAPI validation error: {e}')
-            sys.exit(1)
-        "
+        sed -i "s|DEV_CARD_PLACEHOLDER|$DEV_CARD|g" swagger-ui/index.html
+        sed -i "s|PROD_CARD_PLACEHOLDER|$PROD_CARD|g" swagger-ui/index.html
+        echo "✅ Main index page generated"
 
-    - name: Generate Swagger UI with enhanced error handling
+    - name: Verify generated files
       run: |
-        SPEC_FILE="${{ steps.find-spec.outputs.spec_file }}"
-        echo "🚀 Generating Swagger UI for: $SPEC_FILE"
-        
-        cat > swagger-ui/index.html << EOF
-        <!DOCTYPE html>
-        <html lang="ko">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>API Documentation</title>
-            <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
-            <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5.21.0/favicon-32x32.png" sizes="32x32" />
-            <style>
-                html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
-                *, *:before, *:after { box-sizing: inherit; }
-                body { margin:0; background: #fafafa; }
-                .loading { text-align: center; padding: 50px; font-family: Arial, sans-serif; }
-                .error { color: red; background: #fee; padding: 10px; margin: 10px; border: 1px solid red; }
-                .info { background: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px; border-radius: 5px; }
-            </style>
-        </head>
-        <body>
-            <div class="info">
-                <strong>📄 Loading API Specification:</strong> ${SPEC_FILE}
-            </div>
-            <div id="loading" class="loading">
-                <h2>🔄 Loading API Documentation...</h2>
-                <p>Spec file: <strong>${SPEC_FILE}</strong></p>
-            </div>
-            <div id="swagger-ui"></div>
-            
-            <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
-            <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
-            <script>
-                window.onload = function() {
-                    console.log('🚀 Starting Swagger UI...');
-                    console.log('📁 Looking for spec file: ${SPEC_FILE}');
-                    
-                    // 로딩 표시 숨기기
-                    setTimeout(() => {
-                        const loading = document.getElementById('loading');
-                        if (loading) loading.style.display = 'none';
-                    }, 2000);
-                    
-                    const ui = SwaggerUIBundle({
-                        url: './${SPEC_FILE}',
-                        dom_id: '#swagger-ui',
-                        deepLinking: true,
-                        presets: [
-                            SwaggerUIBundle.presets.apis,
-                            SwaggerUIStandalonePreset
-                        ],
-                        plugins: [
-                            SwaggerUIBundle.plugins.DownloadUrl
-                        ],
-                        layout: "StandaloneLayout",
-                        tryItOutEnabled: true,
-                        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'],
-                        onComplete: function() {
-                            console.log('✅ Swagger UI loaded successfully');
-                            console.log('📊 API spec loaded from: ${SPEC_FILE}');
-                            document.getElementById('loading').style.display = 'none';
-                        },
-                        onFailure: function(data) {
-                            console.error('❌ Failed to load API spec:', data);
-                            document.getElementById('loading').style.display = 'none';
-                            document.getElementById('swagger-ui').innerHTML = 
-                                '<div class="error">' +
-                                '<h3>❌ Failed to load API specification</h3>' +
-                                '<p><strong>File:</strong> ${SPEC_FILE}</p>' +
-                                '<p><strong>Error:</strong> ' + JSON.stringify(data) + '</p>' +
-                                '<p>Please check the browser console for more details.</p>' +
-                                '<p>Try accessing the file directly: <a href="./${SPEC_FILE}" target="_blank">${SPEC_FILE}</a></p>' +
-                                '</div>';
-                        }
-                    });
-                    
-                    window.ui = ui;
-                    
-                    // 파일 존재 확인
-                    fetch('./${SPEC_FILE}')
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-                            }
-                            console.log('✅ OpenAPI file accessible via HTTP');
-                            console.log('📏 Response status:', response.status);
-                            console.log('📄 Content-Type:', response.headers.get('content-type'));
-                            return response.text();
-                        })
-                        .then(content => {
-                            console.log('📄 OpenAPI file content length:', content.length);
-                            console.log('📄 First 200 chars:', content.substring(0, 200));
-                        })
-                        .catch(error => {
-                            console.error('❌ Cannot fetch OpenAPI file:', error);
-                            document.getElementById('swagger-ui').innerHTML = 
-                                '<div class="error">' +
-                                '<h3>❌ Cannot access OpenAPI file</h3>' +
-                                '<p><strong>File:</strong> ${SPEC_FILE}</p>' +
-                                '<p><strong>Error:</strong> ' + error.message + '</p>' +
-                                '<p>Make sure the file exists and is accessible.</p>' +
-                                '</div>';
-                        });
-                };
-            </script>
-        </body>
-        </html>
-        EOF
-        
-        # OpenAPI 스펙 파일 복사
-        echo "📁 Copying spec file..."
-        cp "$SPEC_FILE" swagger-ui/
-        
-        echo "✅ Swagger UI generated with spec file: $SPEC_FILE"
         echo "📁 Generated files:"
-        ls -la swagger-ui/
-        
-        echo "📄 Verifying copied spec file:"
-        ls -la "swagger-ui/$SPEC_FILE"
-        
-        # 복사된 파일 내용 확인
-        echo "📄 First few lines of copied file:"
-        head -5 "swagger-ui/$SPEC_FILE"
+        find swagger-ui -type f | sort
+        echo ""
+        echo "📄 File sizes:"
+        find swagger-ui -type f -exec ls -lh {} \;
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: './swagger-ui'
 
-  # 별도의 배포 job
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    
-    # GitHub Pages 환경 설정
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
