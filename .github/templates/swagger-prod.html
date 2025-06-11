@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다시 스탠드 API Documentation - Production</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
+    <style>
+        .header { background: #1f2937; color: white; padding: 1rem; text-align: center; }
+        .env-badge { background: #dc2626; color: white; padding: 0.25rem 0.75rem; border-radius: 0.375rem; }
+        .nav-links { text-align: center; padding: 1rem; background: #f9fafb; }
+        .nav-links a { margin: 0 1rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; }
+        .nav-links a.active { background: #3b82f6; color: white; border-radius: 0.375rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>다시 스탠드 API Documentation</h1>
+        <span class="env-badge">Production</span>
+    </div>
+    <div class="nav-links">
+        <a href="../">홈</a>
+        <a href="../dev/">개발 환경</a>
+        <a href="../prod/" class="active">프로덕션 환경</a>
+    </div>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: './SPEC_FILE_PLACEHOLDER',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+            layout: "StandaloneLayout"
+        });
+    </script>
+</body>
+</html>

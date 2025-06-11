@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다시 스탠드 API Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+        h1 { color: #2d3748; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { color: #718096; font-size: 1.1rem; margin-bottom: 2rem; }
+        .environments { display: grid; gap: 1rem; margin-top: 2rem; }
+        .env-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .env-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .env-card.dev { border-color: #38a169; }
+        .env-card.dev:hover { border-color: #2f855a; background: #f0fff4; }
+        .env-card.prod { border-color: #e53e3e; }
+        .env-card.prod:hover { border-color: #c53030; background: #fff5f5; }
+        .env-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .env-description { color: #718096; margin-bottom: 1rem; }
+        .env-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .badge-dev { background: #c6f6d5; color: #22543d; }
+        .badge-prod { background: #fed7d7; color: #742a2a; }
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        .unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f7fafc;
+        }
+        .unavailable:hover { transform: none; box-shadow: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>다시 스탠드</h1>
+        <p class="subtitle">다양한 관점의 정치 뉴스 API Documentation</p>
+        <div class="environments">
+            DEV_CARD_PLACEHOLDER
+            PROD_CARD_PLACEHOLDER
+        </div>
+        <div class="footer">
+            <p>🔧 개발 환경과 🚀 프로덕션 환경 중 원하는 API 문서를 선택하세요</p>
+            <p><small>Powered by Swagger UI | 패션개발자들</small></p>
+        </div>
+    </div>
+</body>
+</html>

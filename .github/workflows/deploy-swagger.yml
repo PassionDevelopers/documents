@@ -68,50 +68,11 @@ jobs:
         DEV_FILE="${{ steps.find-specs.outputs.dev_file }}"
         SPEC_FILENAME=$(basename "$DEV_FILE")
         
-        # Create dev Swagger UI
-        cat > swagger-ui/dev/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>다시 스탠드 API Documentation - Development</title>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
-    <style>
-        .header { background: #1f2937; color: white; padding: 1rem; text-align: center; }
-        .env-badge { background: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 0.375rem; }
-        .nav-links { text-align: center; padding: 1rem; background: #f9fafb; }
-        .nav-links a { margin: 0 1rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; }
-        .nav-links a.active { background: #3b82f6; color: white; border-radius: 0.375rem; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>다시 스탠드 API Documentation</h1>
-        <span class="env-badge">Development</span>
-    </div>
-    <div class="nav-links">
-        <a href="../">홈</a>
-        <a href="../dev/" class="active">개발 환경</a>
-        <a href="../prod/">프로덕션 환경</a>
-    </div>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
-    <script>
-        SwaggerUIBundle({
-            url: './SPEC_FILE_PLACEHOLDER',
-            dom_id: '#swagger-ui',
-            deepLinking: true,
-            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-            layout: "StandaloneLayout"
-        });
-    </script>
-</body>
-</html>
-EOF
-        
+        # Copy template and replace placeholder
+        cp .github/templates/swagger-dev.html swagger-ui/dev/index.html
         sed -i "s/SPEC_FILE_PLACEHOLDER/$SPEC_FILENAME/g" swagger-ui/dev/index.html
+        
+        # Copy spec file
         cp "$DEV_FILE" "swagger-ui/dev/$SPEC_FILENAME"
         echo "✅ Development environment generated"
 
@@ -121,50 +82,11 @@ EOF
         PROD_FILE="${{ steps.find-specs.outputs.prod_file }}"
         SPEC_FILENAME=$(basename "$PROD_FILE")
         
-        # Create prod Swagger UI
-        cat > swagger-ui/prod/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>다시 스탠드 API Documentation - Production</title>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui.css" />
-    <style>
-        .header { background: #1f2937; color: white; padding: 1rem; text-align: center; }
-        .env-badge { background: #dc2626; color: white; padding: 0.25rem 0.75rem; border-radius: 0.375rem; }
-        .nav-links { text-align: center; padding: 1rem; background: #f9fafb; }
-        .nav-links a { margin: 0 1rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; }
-        .nav-links a.active { background: #3b82f6; color: white; border-radius: 0.375rem; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>다시 스탠드 API Documentation</h1>
-        <span class="env-badge">Production</span>
-    </div>
-    <div class="nav-links">
-        <a href="../">홈</a>
-        <a href="../dev/">개발 환경</a>
-        <a href="../prod/" class="active">프로덕션 환경</a>
-    </div>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-bundle.js"></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.21.0/swagger-ui-standalone-preset.js"></script>
-    <script>
-        SwaggerUIBundle({
-            url: './SPEC_FILE_PLACEHOLDER',
-            dom_id: '#swagger-ui',
-            deepLinking: true,
-            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-            layout: "StandaloneLayout"
-        });
-    </script>
-</body>
-</html>
-EOF
-        
+        # Copy template and replace placeholder
+        cp .github/templates/swagger-prod.html swagger-ui/prod/index.html
         sed -i "s/SPEC_FILE_PLACEHOLDER/$SPEC_FILENAME/g" swagger-ui/prod/index.html
+        
+        # Copy spec file
         cp "$PROD_FILE" "swagger-ui/prod/$SPEC_FILENAME"
         echo "✅ Production environment generated"
 
@@ -173,141 +95,28 @@ EOF
         DEV_FILE="${{ steps.find-specs.outputs.dev_file }}"
         PROD_FILE="${{ steps.find-specs.outputs.prod_file }}"
         
-        # Create main index page
-        cat > swagger-ui/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>다시 스탠드 API Documentation</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            max-width: 600px;
-            width: 90%;
-            text-align: center;
-        }
-        h1 { color: #2d3748; font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .subtitle { color: #718096; font-size: 1.1rem; margin-bottom: 2rem; }
-        .environments { display: grid; gap: 1rem; margin-top: 2rem; }
-        .env-card {
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-            display: block;
-        }
-        .env-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .env-card.dev { border-color: #38a169; }
-        .env-card.dev:hover { border-color: #2f855a; background: #f0fff4; }
-        .env-card.prod { border-color: #e53e3e; }
-        .env-card.prod:hover { border-color: #c53030; background: #fff5f5; }
-        .env-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .env-description { color: #718096; margin-bottom: 1rem; }
-        .env-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        .badge-dev { background: #c6f6d5; color: #22543d; }
-        .badge-prod { background: #fed7d7; color: #742a2a; }
-        .footer {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-            color: #718096;
-            font-size: 0.875rem;
-        }
-        .unavailable {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f7fafc;
-        }
-        .unavailable:hover { transform: none; box-shadow: none; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>다시 스탠드</h1>
-        <p class="subtitle">다양한 관점의 정치 뉴스 API Documentation</p>
-        <div class="environments">
-            DEV_CARD_PLACEHOLDER
-            PROD_CARD_PLACEHOLDER
-        </div>
-        <div class="footer">
-            <p>🔧 개발 환경과 🚀 프로덕션 환경 중 원하는 API 문서를 선택하세요</p>
-            <p><small>Powered by Swagger UI | 패션개발자들</small></p>
-        </div>
-    </div>
-</body>
-</html>
-EOF
+        # Copy main template
+        cp .github/templates/index.html swagger-ui/index.html
         
-        # Generate environment cards using heredoc to avoid quote issues
+        # Choose appropriate card templates
         if [ -n "$DEV_FILE" ]; then
-          cat > /tmp/dev_card.html << 'CARD_EOF'
-<a href="./dev/" class="env-card dev">
-  <div class="env-title">🔧 개발 환경</div>
-  <div class="env-description">개발 및 테스트용 API 스펙</div>
-  <span class="env-badge badge-dev">Development</span>
-</a>
-CARD_EOF
+          DEV_CARD_TEMPLATE=".github/templates/dev-card-available.html"
         else
-          cat > /tmp/dev_card.html << 'CARD_EOF'
-<div class="env-card unavailable">
-  <div class="env-title">🔧 개발 환경</div>
-  <div class="env-description">개발 환경 API 스펙이 없습니다</div>
-  <span class="env-badge badge-dev">Unavailable</span>
-</div>
-CARD_EOF
+          DEV_CARD_TEMPLATE=".github/templates/dev-card-unavailable.html"
         fi
         
         if [ -n "$PROD_FILE" ]; then
-          cat > /tmp/prod_card.html << 'CARD_EOF'
-<a href="./prod/" class="env-card prod">
-  <div class="env-title">🚀 프로덕션 환경</div>
-  <div class="env-description">실제 서비스용 API 스펙</div>
-  <span class="env-badge badge-prod">Production</span>
-</a>
-CARD_EOF
+          PROD_CARD_TEMPLATE=".github/templates/prod-card-available.html"
         else
-          cat > /tmp/prod_card.html << 'CARD_EOF'
-<div class="env-card unavailable">
-  <div class="env-title">🚀 프로덕션 환경</div>
-  <div class="env-description">프로덕션 환경 API 스펙이 없습니다</div>
-  <span class="env-badge badge-prod">Unavailable</span>
-</div>
-CARD_EOF
+          PROD_CARD_TEMPLATE=".github/templates/prod-card-unavailable.html"
         fi
         
-        # Replace placeholders with file contents
-        sed -i '/DEV_CARD_PLACEHOLDER/r /tmp/dev_card.html' swagger-ui/index.html
-        sed -i '/DEV_CARD_PLACEHOLDER/d' swagger-ui/index.html
-        sed -i '/PROD_CARD_PLACEHOLDER/r /tmp/prod_card.html' swagger-ui/index.html
-        sed -i '/PROD_CARD_PLACEHOLDER/d' swagger-ui/index.html
+        # Replace placeholders with card content
+        sed -i "/DEV_CARD_PLACEHOLDER/r $DEV_CARD_TEMPLATE" swagger-ui/index.html
+        sed -i "/DEV_CARD_PLACEHOLDER/d" swagger-ui/index.html
+        sed -i "/PROD_CARD_PLACEHOLDER/r $PROD_CARD_TEMPLATE" swagger-ui/index.html
+        sed -i "/PROD_CARD_PLACEHOLDER/d" swagger-ui/index.html
         
-        # Clean up temporary files
-        rm -f /tmp/dev_card.html /tmp/prod_card.html
         echo "✅ Main index page generated"
 
     - name: Verify generated files
