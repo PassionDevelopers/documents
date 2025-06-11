@@ -263,21 +263,51 @@ EOF
 </html>
 EOF
         
-        # Generate environment cards
+        # Generate environment cards using heredoc to avoid quote issues
         if [ -n "$DEV_FILE" ]; then
-          DEV_CARD='<a href="./dev/" class="env-card dev"><div class="env-title">🔧 개발 환경</div><div class="env-description">개발 및 테스트용 API 스펙</div><span class="env-badge badge-dev">Development</span></a>'
+          cat > /tmp/dev_card.html << 'CARD_EOF'
+<a href="./dev/" class="env-card dev">
+  <div class="env-title">🔧 개발 환경</div>
+  <div class="env-description">개발 및 테스트용 API 스펙</div>
+  <span class="env-badge badge-dev">Development</span>
+</a>
+CARD_EOF
         else
-          DEV_CARD='<div class="env-card unavailable"><div class="env-title">🔧 개발 환경</div><div class="env-description">개발 환경 API 스펙이 없습니다</div><span class="env-badge badge-dev">Unavailable</span></div>'
+          cat > /tmp/dev_card.html << 'CARD_EOF'
+<div class="env-card unavailable">
+  <div class="env-title">🔧 개발 환경</div>
+  <div class="env-description">개발 환경 API 스펙이 없습니다</div>
+  <span class="env-badge badge-dev">Unavailable</span>
+</div>
+CARD_EOF
         fi
         
         if [ -n "$PROD_FILE" ]; then
-          PROD_CARD='<a href="./prod/" class="env-card prod"><div class="env-title">🚀 프로덕션 환경</div><div class="env-description">실제 서비스용 API 스펙</div><span class="env-badge badge-prod">Production</span></a>'
+          cat > /tmp/prod_card.html << 'CARD_EOF'
+<a href="./prod/" class="env-card prod">
+  <div class="env-title">🚀 프로덕션 환경</div>
+  <div class="env-description">실제 서비스용 API 스펙</div>
+  <span class="env-badge badge-prod">Production</span>
+</a>
+CARD_EOF
         else
-          PROD_CARD='<div class="env-card unavailable"><div class="env-title">🚀 프로덕션 환경</div><div class="env-description">프로덕션 환경 API 스펙이 없습니다</div><span class="env-badge badge-prod">Unavailable</span></div>'
+          cat > /tmp/prod_card.html << 'CARD_EOF'
+<div class="env-card unavailable">
+  <div class="env-title">🚀 프로덕션 환경</div>
+  <div class="env-description">프로덕션 환경 API 스펙이 없습니다</div>
+  <span class="env-badge badge-prod">Unavailable</span>
+</div>
+CARD_EOF
         fi
         
-        sed -i "s|DEV_CARD_PLACEHOLDER|$DEV_CARD|g" swagger-ui/index.html
-        sed -i "s|PROD_CARD_PLACEHOLDER|$PROD_CARD|g" swagger-ui/index.html
+        # Replace placeholders with file contents
+        sed -i '/DEV_CARD_PLACEHOLDER/r /tmp/dev_card.html' swagger-ui/index.html
+        sed -i '/DEV_CARD_PLACEHOLDER/d' swagger-ui/index.html
+        sed -i '/PROD_CARD_PLACEHOLDER/r /tmp/prod_card.html' swagger-ui/index.html
+        sed -i '/PROD_CARD_PLACEHOLDER/d' swagger-ui/index.html
+        
+        # Clean up temporary files
+        rm -f /tmp/dev_card.html /tmp/prod_card.html
         echo "✅ Main index page generated"
 
     - name: Verify generated files
