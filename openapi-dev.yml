@@ -656,6 +656,40 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/ServerError'
+    post:
+      summary: 시청 기록 저장
+      description: 사용자가 기사를 클릭했을 때 시청 기록을 저장합니다. 이슈 ID와 기사 ID를 함께 기록합니다.
+      tags:
+        - 사용자
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchHistoryRequest'
+      responses:
+        '200':
+          description: 성공적으로 시청 기록을 저장
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: 기사 또는 이슈를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /topics:
     get:
@@ -1082,6 +1116,25 @@ components:
           example: "center"
       required:
         - perspective
+      additionalProperties: false
+
+    WatchHistoryRequest:
+      type: object
+      description: 시청 기록 저장 요청
+      properties:
+        articleId:
+          type: string
+          minLength: 1
+          description: 시청한 기사의 ID
+          example: "507f1f77bcf86cd799439012"
+        issueId:
+          type: string
+          minLength: 1
+          description: 기사가 속한 이슈의 ID
+          example: "507f1f77bcf86cd799439011"
+      required:
+        - articleId
+        - issueId
       additionalProperties: false
 
     MediaPerspectiveEvaluationRequest:
