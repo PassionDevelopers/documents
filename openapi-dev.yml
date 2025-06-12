@@ -35,6 +35,8 @@ tags:
     description: 주요 뉴스 이슈 관련 API
   - name: 사용자
     description: 사용자 정치성향 관련 API
+  - name: 매체
+    description: 미디어 매체 관련 API
 
 
 paths:
@@ -50,7 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HotIssuesResponse'
+                $ref: '#/components/schemas/HotIssueListResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -88,7 +90,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IssuesListResponse'
+                $ref: '#/components/schemas/IssueListResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -126,7 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IssuesListResponse'
+                $ref: '#/components/schemas/IssueListResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -164,7 +166,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IssuesListResponse'
+                $ref: '#/components/schemas/IssueListResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -175,44 +177,6 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/ServerError'
-
-  # /issues:
-  #   get:
-  #     summary: 주요 이슈 목록 조회
-  #     description: 현재 주요 뉴스 이슈 목록을 반환합니다.
-  #     tags:
-  #       - 이슈
-  #     parameters:
-  #       - name: limit
-  #         in: query
-  #         description: 반환할 이슈 수 (기본값 10)
-  #         schema:
-  #           type: integer
-  #           default: 10
-  #           minimum: 1
-  #           maximum: 50
-  #       - name: lastIssueId
-  #         in: query
-  #         description: 마지막으로 읽은 이슈의 아이디 (페이징용)
-  #         schema:
-  #           type: string
-  #     responses:
-  #       '200':
-  #         description: 성공적으로 이슈 목록을 반환
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/IssuesListResponse'
-  #       '400':
-  #         $ref: '#/components/responses/BadRequest'
-  #       '401':
-  #         $ref: '#/components/responses/Unauthorized'
-  #       '403':
-  #         $ref: '#/components/responses/Forbidden'
-  #       '429':
-  #         $ref: '#/components/responses/TooManyRequests'
-  #       '500':
-  #         $ref: '#/components/responses/ServerError'
 
   /issues/{issueId}:
     get:
@@ -247,9 +211,139 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /media/interest:
+    get:
+      summary: 사용자 관심 매체 목록 조회 (미구현)
+      description: 사용자의 정치성향과 관심도에 기반한 맞춤 매체 목록을 반환합니다.
+      tags:
+        - 매체
+      parameters:
+        - name: limit
+          in: query
+          description: 반환할 매체 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastMediaId
+          in: query
+          description: 마지막으로 읽은 매체의 아이디 (페이징용)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 관심 매체 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /media/{mediaId}/issues:
+    get:
+      summary: 특정 매체의 이슈 목록 조회 (미구현)
+      description: 특정 매체에서 다룬 이슈들의 목록을 페이징하여 반환합니다.
+      tags:
+        - 매체
+      parameters:
+        - name: mediaId
+          in: path
+          description: 매체 ID
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 반환할 이슈 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastIssueId
+          in: query
+          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 매체의 이슈 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /media/{mediaId}/articles:
+    get:
+      summary: 특정 매체의 기사 목록 조회 (미구현)
+      description: 특정 매체에서 발행한 기사들의 목록을 페이징하여 반환합니다.
+      tags:
+        - 매체
+      parameters:
+        - name: mediaId
+          in: path
+          description: 매체 ID
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 반환할 기사 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastArticleId
+          in: query
+          description: 마지막으로 읽은 기사의 아이디 (페이징용)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 매체의 기사 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /user/political-preference:
     post:
-      summary: 사용자 정치성향 설정/변경
+      summary: 사용자 정치성향 설정/변경 (미구현)
       description: |
         사용자의 정치성향을 설정하거나 변경합니다.
         JWT 토큰으로 사용자를 식별하며, 조작 방지를 위해 서버에서 검증합니다.
@@ -281,6 +375,56 @@ paths:
 
 components:
   schemas:
+    MediaResponse:
+      type: object
+      description: 매체 응답 모델
+      properties:
+        _id:
+          type: string
+          description: 매체 ID
+          example: "507f1f77bcf86cd799439013"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 매체 이름
+          example: "대한일보"
+        description:
+          type: string
+          maxLength: 1000
+          description: 매체에 대한 정보
+          example: "1963년 창간된 대한민국의 대표적인 종합일간지입니다."
+        perspective:
+          type: string
+          enum: ["left", "center_left", "center", "center_right", "right"]
+          description: 매체의 정치적 성향
+          example: "center"
+        url:
+          type: string
+          format: uri
+          maxLength: 2000
+          description: 매체 웹사이트 URL
+          example: "https://www.daehan-daily.com"
+        logoUrl:
+          type: string
+          format: uri
+          maxLength: 2000
+          description: 매체 로고 이미지 URL
+          example: "https://cdn.daehan-daily.com/logo.png"
+          nullable: true
+        recentIssues:
+          $ref: '#/components/schemas/IssueListResponse'
+        recentArticles:
+          $ref: '#/components/schemas/ArticleListResponse'
+      required:
+        - _id
+        - name
+        - description
+        - perspective
+        - url
+        - recentIssues
+        - recentArticles
+      additionalProperties: false
 
     PoliticalPreferenceRequest:
       type: object
@@ -654,7 +798,7 @@ components:
         - keywords
       additionalProperties: false
 
-    HotIssuesResponse:
+    HotIssueListResponse:
       type: object
       description: 핫이슈 목록 응답 모델
       properties:
@@ -673,7 +817,7 @@ components:
         - totalCount
       additionalProperties: false
 
-    IssuesListResponse:
+    IssueListResponse:
       type: object
       description: 이슈 목록 응답 모델
       properties:
@@ -696,6 +840,29 @@ components:
         - lastIssueId
       additionalProperties: false
 
+    ArticleListResponse:
+      type: object
+      description: 기사 목록 응답 모델
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleResponse'
+          description: 기사 목록
+        hasMore:
+          type: boolean
+          description: 더 많은 데이터가 있는지 여부
+          example: true
+        lastArticleId:
+          type: string
+          description: 마지막 기사 ID (페이징용)
+          example: "507f1f77bcf86cd799439012"
+      required:
+        - articles
+        - hasMore
+        - lastArticleId
+      additionalProperties: false
+
     IssueDetailFullResponse:
       type: object
       description: 이슈 상세 전체 응답 모델
@@ -703,13 +870,33 @@ components:
         issue:
           $ref: '#/components/schemas/IssueDetailResponse'
         articles:
-          type: array
-          items:
-            $ref: '#/components/schemas/ArticleResponse'
-          description: 관련 기사 목록
+          $ref: '#/components/schemas/ArticleListResponse'
       required:
         - issue
         - articles
+      additionalProperties: false
+
+    MediaListResponse:
+      type: object
+      description: 매체 목록 응답 모델
+      properties:
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaResponse'
+          description: 매체 목록
+        hasMore:
+          type: boolean
+          description: 더 많은 데이터가 있는지 여부
+          example: true
+        lastMediaId:
+          type: string
+          description: 마지막 매체 ID (페이징용)
+          example: "507f1f77bcf86cd799439013"
+      required:
+        - media
+        - hasMore
+        - lastMediaId
       additionalProperties: false
 
     ErrorDetail:
