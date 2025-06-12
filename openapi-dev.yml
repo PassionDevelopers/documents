@@ -378,7 +378,7 @@ paths:
 
   /media/{mediaId}/subscribe:
     post:
-      summary: 매체 구독
+      summary: 매체 구독 (미구현)
       description: 사용자가 특정 매체를 구독합니다.
       tags:
         - 매체
@@ -415,7 +415,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
     delete:
-      summary: 매체 구독 취소
+      summary: 매체 구독 취소 (미구현)
       description: 사용자가 특정 매체의 구독을 취소합니다.
       tags:
         - 매체
@@ -454,7 +454,7 @@ paths:
 
   /media/{mediaId}/evaluate:
     post:
-      summary: 매체 정치성향 평가
+      summary: 매체 정치성향 평가 (미구현)
       description: 사용자가 특정 매체의 정치적 성향을 평가합니다. 이 평가는 userEvaluatedPerspective 필드에 저장됩니다.
       tags:
         - 매체
@@ -493,7 +493,7 @@ paths:
 
   /media/user-evaluated:
     get:
-      summary: 사용자 평가 성향이 있는 매체 목록 조회
+      summary: 사용자 평가 성향이 있는 매체 목록 조회 (미구현)
       description: 사용자가 정치적 성향을 평가한 매체들의 목록을 반환합니다. userEvaluatedPerspective가 설정된 매체만 포함됩니다.
       tags:
         - 매체
@@ -659,7 +659,7 @@ paths:
 
   /topics:
     get:
-      summary: 토픽 목록 조회
+      summary: 토픽 목록 조회 (미구현)
       description: 모든 토픽의 목록을 반환합니다. 각 토픽에는 관련 카테고리와 이슈 수, 구독 상태가 포함됩니다.
       tags:
         - 토픽
@@ -697,7 +697,7 @@ paths:
 
   /topics/{topicId}/subscribe:
     post:
-      summary: 토픽 구독
+      summary: 토픽 구독 (미구현)
       description: 사용자가 특정 토픽을 구독합니다.
       tags:
         - 토픽
@@ -734,7 +734,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
     delete:
-      summary: 토픽 구독 취소
+      summary: 토픽 구독 취소 (미구현)
       description: 사용자가 특정 토픽의 구독을 취소합니다.
       tags:
         - 토픽
@@ -774,7 +774,7 @@ paths:
 
   /topics/subscribed:
     get:
-      summary: 사용자 구독 토픽 상세 목록 조회
+      summary: 사용자 구독 토픽 상세 목록 조회 (미구현)
       description: 사용자가 구독한 토픽들의 상세 정보를 반환합니다. 각 토픽에는 속한 이슈들과 관련 토픽들이 포함됩니다.
       tags:
         - 토픽
