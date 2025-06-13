@@ -657,7 +657,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
     post:
-      summary: 시청 기록 저장
+      summary: 시청 기록 저장 (미구현)
       description: 사용자가 기사를 클릭했을 때 시청 기록을 저장합니다. 이슈 ID와 기사 ID를 함께 기록합니다.
       tags:
         - 사용자
@@ -686,6 +686,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /user/evaluate/{issueId}:
+    post:
+      summary: 이슈 평가 (미구현)
+      description: 이슈에 대한 본인의 판단 결과 저장
+      tags:
+        - 사용자
+      parameters:
+        - name: issueId
+          in: path
+          description: 평가할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                perspective:
+                  type: string
+                  enum: ["left", "center", "right"]
+                  example: "center"
+              required:
+                - perspective
+              additionalProperties: false
+      responses:
+        '200':
+          description: 성공적으로 이슈 평가를 저장
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '500':
@@ -1146,6 +1193,19 @@ components:
           enum: ["left", "center_left", "center", "center_right", "right"]
           description: 사용자가 평가하는 매체의 정치성향
           example: "center_right"
+      required:
+        - perspective
+      additionalProperties: false
+
+    IssueEvaluationRequest:
+      type: object
+      description: 이슈 정치성향 평가 요청
+      properties:
+        perspective:
+          type: string
+          enum: ["left", "center", "right"]
+          description: 사용자가 평가하는 이슈의 정치성향
+          example: "center"
       required:
         - perspective
       additionalProperties: false
