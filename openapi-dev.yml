@@ -42,40 +42,28 @@ tags:
 
 
 paths:
-  /issues/hot:
+  /issues:
     get:
-      summary: 핫이슈 목록 조회 (미구현)
-      description: 현재 가장 주목받는 핫이슈 목록을 반환합니다. 개수가 고정되어 있고 이미지 URL이 포함됩니다.
-      tags:
-        - 이슈
-      responses:
-        '200':
-          description: 성공적으로 핫이슈 목록을 반환
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HotIssueListResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /issues/daily:
-    get:
-      summary: 데일리 이슈 목록 조회 (미구현)
-      description: 현재 일자의 주요 뉴스 이슈 목록을 반환합니다.
+      summary: 이슈 목록 조회 (미구현)
+      description: |
+        type 파라미터에 따라 다양한 이슈 목록을 반환합니다.
+        - hot: 핫이슈 목록 (고정 개수, 이미지 URL 필수)
+        - daily: 데일리 이슈 목록
+        - for-you: 맞춤 이슈 목록 (사용자 정치성향 기반)
+        - blind-spot: 블라인드 스팟 이슈 목록 (사용자 정치성향 반대 관점)
       tags:
         - 이슈
       parameters:
+        - name: type
+          in: query
+          description: 조회할 이슈 타입
+          required: true
+          schema:
+            type: string
+            enum: ["hot", "daily", "for-you", "blind-spot"]
         - name: limit
           in: query
-          description: 반환할 이슈 수 (기본값 10)
+          description: 반환할 이슈 수 (기본값 10, hot 타입에서는 무시됨)
           schema:
             type: integer
             default: 10
@@ -83,88 +71,12 @@ paths:
             maximum: 50
         - name: lastIssueId
           in: query
-          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
+          description: 마지막으로 읽은 이슈의 아이디 (페이징용, hot 타입에서는 무시됨)
           schema:
             type: string
       responses:
         '200':
-          description: 성공적으로 데일리 이슈 목록을 반환
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IssueListResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /issues/for-you:
-    get:
-      summary: 맞춤 이슈 목록 조회 (미구현)
-      description: 사용자의 정치성향과 관심도에 기반한 맞춤 이슈 목록을 반환합니다.
-      tags:
-        - 이슈
-      parameters:
-        - name: limit
-          in: query
-          description: 반환할 이슈 수 (기본값 10)
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
-        - name: lastIssueId
-          in: query
-          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 성공적으로 맞춤 이슈 목록을 반환
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IssueListResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /issues/blind-spot:
-    get:
-      summary: 블라인드 스팟 이슈 목록 조회 (미구현)
-      description: 사용자의 정치성향과 반대되는 관점의 이슈들을 제공하여 다양한 시각을 제공합니다.
-      tags:
-        - 이슈
-      parameters:
-        - name: limit
-          in: query
-          description: 반환할 이슈 수 (기본값 10)
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
-        - name: lastIssueId
-          in: query
-          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 성공적으로 블라인드 스팟 이슈 목록을 반환
+          description: 성공적으로 이슈 목록을 반환
           content:
             application/json:
               schema:
