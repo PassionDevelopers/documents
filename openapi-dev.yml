@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: 다시 스탠드 API
+  title: 다시 스탠드 개발환경 API
   description: |
     다양한 정치적 관점에서 뉴스를 제공하는 서비스의 API입니다.
     동일 이슈에 대한 다양한 출처의 뉴스를 비교할 수 있게 해주는 플랫폼입니다.
@@ -10,8 +10,8 @@ info:
     email: api@dasi-stand.com
 
 servers:
-  - url: https://492ipc4742.execute-api.ap-northeast-2.amazonaws.com
-    description: 배성민 사비로 운영되는 테스트 서버
+  - url: https://6pqn3o8ua5.execute-api.ap-northeast-2.amazonaws.com
+    description: 개발 서버
 
 security:
   - bearerAuth: []
@@ -20,9 +20,7 @@ security:
 x-cors:
   enabled: true
   origins:
-    - "https://www.dasi-stand.com"
-    - "https://app.dasi-stand.com"
-    - "http://localhost:3000"
+    - "*"
   methods:
     - GET
   headers:
@@ -46,13 +44,13 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 이슈 목록 조회 (미구현)
+      summary: 이슈 목록 조회
       description: |
         type 파라미터에 따라 다양한 이슈 목록을 반환합니다.
         - hot: 핫이슈 목록 (고정 개수, 이미지 URL 필수)
         - daily: 데일리 이슈 목록
-        - for-you: 맞춤 이슈 목록 (사용자 정치성향 기반)
-        - blind-spot: 블라인드 스팟 이슈 목록 (사용자 정치성향 반대 관점)
+        - for-you: 맞춤 이슈 목록 (미구현)
+        - blind-spot: 블라인드 스팟 이슈 목록
       tags:
         - 이슈
       parameters:
