@@ -490,7 +490,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "./components.yml#/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 정치성향 설정/변경 (미구현)
+      summary: 사용자 정치성향 설정/변경
       description: |
         사용자의 정치성향을 설정하거나 변경합니다.
         JWT 토큰으로 사용자를 식별하며, 조작 방지를 위해 서버에서 검증합니다.
@@ -594,7 +594,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "./components.yml#/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 시청 기록 저장 (미구현)
+      summary: 시청 기록 저장
       description: 사용자가 기사를 클릭했을 때 시청 기록을 저장합니다. 이슈 ID와 기사 ID를 함께 기록합니다.
       tags:
         - 사용자
