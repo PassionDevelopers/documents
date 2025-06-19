@@ -48,6 +48,8 @@ paths:
         - daily: 데일리 이슈 목록
         - for-you: 맞춤 이슈 목록 (미구현)
         - blind-spot: 블라인드 스팟 이슈 목록
+        - blind-spot-left: 좌파 블라인드 스팟 이슈 목록
+        - blind-spot-right: 우파 블라인드 스팟 이슈 목록
       tags:
         - 이슈
       parameters:
@@ -57,7 +59,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["hot", "daily", "for-you", "blind-spot"]
+            enum: ["hot", "daily", "for-you", "blind-spot", "blind-spot-left", "blind-spot-right"]
         - name: limit
           in: query
           description: 반환할 이슈 수 (기본값 10, hot 타입에서는 무시됨)
@@ -797,6 +799,31 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
+  /topics/{topicId}:
+    get:
+      x-amazon-apigateway-integration:
+        $ref: "./components.yml#/x-amazon-apigateway-integrations/lambda-integration"
+      summary:  특정 토픽 상세 정보 조회
+      description:  특정 토픽의 상세 정보를 반환합니다. 각 토픽에는 속한 카테고리와 이슈 수, 구독 상태가 포함됩니다.
+      tags:
+        - 토픽
+      responses:
+        '200':
+          description:  성공적으로 토픽 상세 정보를 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/TopicDetailResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
 
   /topics/subscribed:
     get:

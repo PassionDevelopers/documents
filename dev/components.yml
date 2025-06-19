@@ -284,9 +284,14 @@ schemas:
         type: string
         description: 관련 토픽 이름
         example: "대선"
+      isSubscribed:
+        type: boolean
+        description: 사용자의 구독 여부
+        example: true
     required:
       - _id
       - name
+      - isSubscribed
     additionalProperties: false
 
   TopicResponse:
