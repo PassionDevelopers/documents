@@ -3,7 +3,7 @@ name: Deploy Multi-Environment Swagger UI to GitHub Pages
 on:
   push:
     branches: [ main, master ]
-    paths: [ 'openapi*.yml', 'openapi*.yaml', 'swagger*.yml', 'swagger*.yaml' ]
+    paths: [ 'dev/**/*.yml', 'dev/**/*.yaml', 'prod/**/*.yml', 'prod/**/*.yaml' ]
   workflow_dispatch:
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
         DEV_FILE=""
         PROD_FILE=""
         
-        for file in "openapi-dev.yml" "openapi-dev.yaml"; do
+        for file in "dev/openapi.yml" "dev/openapi.yaml"; do
           if [ -f "$file" ]; then
             DEV_FILE="$file"
             echo "✅ Found dev file: $file"
@@ -38,7 +38,7 @@ jobs:
           fi
         done
         
-        for file in "openapi-prod.yml" "openapi-prod.yaml"; do
+        for file in "prod/openapi.yml" "prod/openapi.yaml"; do
           if [ -f "$file" ]; then
             PROD_FILE="$file"
             echo "✅ Found prod file: $file"
@@ -74,6 +74,13 @@ jobs:
         
         # Copy spec file
         cp "$DEV_FILE" "swagger-ui/dev/$SPEC_FILENAME"
+        
+        # Copy components file if it exists
+        if [ -f "dev/components.yml" ]; then
+          cp "dev/components.yml" "swagger-ui/dev/components.yml"
+          echo "✅ Components file copied"
+        fi
+        
         echo "✅ Development environment generated"
 
     - name: Generate Production Environment
