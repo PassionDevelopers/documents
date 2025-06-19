@@ -10,7 +10,7 @@ info:
     email: api@dasi-stand.com
 
 servers:
-  - url: https://6pqn3o8ua5.execute-api.ap-northeast-2.amazonaws.com
+  - url: https://83j7qkg3ig.execute-api.ap-northeast-2.amazonaws.com
     description: 개발 서버
 
 security:
@@ -922,3 +922,4 @@ components:
       httpMethod: POST
       uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_dev/invocations
       payloadFormatVersion: "2.0"
+      credentials: arn:aws:iam::137470820403:role/API_GATEWAY
