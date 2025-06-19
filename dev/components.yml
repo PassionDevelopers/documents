@@ -1,9 +1,4 @@
-x-amazon-apigateway-integrations:
-  lambda-integration:
-    type: aws_proxy
-    httpMethod: POST
-    uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_dev/invocations
-    payloadFormatVersion: "2.0"
+
 
 schemas:
   # ============== 공통/기본 모델 ==============
