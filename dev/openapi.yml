@@ -719,7 +719,7 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
-  /topics/{topicId}/subscribe:
+  /topics/subscribe/{topicId}:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
@@ -799,7 +799,7 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
-  /topics/{topicId}:
+  /topics/detail/{topicId}:
     get:
       x-amazon-apigateway-integration:
         $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
