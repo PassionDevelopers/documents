@@ -807,6 +807,13 @@ paths:
       description:  특정 토픽의 상세 정보를 반환합니다. 각 토픽에는 속한 카테고리와 이슈 수, 구독 상태가 포함됩니다.
       tags:
         - 토픽
+      parameters:
+        - name: topicId
+          in: path
+          description: 토픽 ID
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description:  성공적으로 토픽 상세 정보를 반환
