@@ -46,7 +46,7 @@ paths:
         type 파라미터에 따라 다양한 이슈 목록을 반환합니다.
         - hot: 핫이슈 목록 (고정 개수, 이미지 URL 필수)
         - daily: 데일리 이슈 목록
-        - for-you: 맞춤 이슈 목록 (미구현)
+        - for-you: 맞춤 이슈 목록
         - blind-spot: 블라인드 스팟 이슈 목록
         - blind-spot-left: 좌파 블라인드 스팟 이슈 목록
         - blind-spot-right: 우파 블라인드 스팟 이슈 목록
@@ -130,7 +130,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 관심 매체 목록 조회 (미구현)
+      summary: 사용자 관심 매체 목록 조회
       description: 사용자의 관심 매체 목록을 반환합니다.
       tags:
         - 매체
@@ -170,7 +170,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 매체의 이슈 목록 조회 (미구현)
+      summary: 특정 매체의 이슈 목록 조회
       description: 특정 매체에서 다룬 이슈들의 목록을 페이징하여 반환합니다.
       tags:
         - 매체
@@ -218,7 +218,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 매체의 기사 목록 조회 (미구현)
+      summary: 특정 매체의 기사 목록 조회
       description: 특정 매체에서 발행한 기사들의 목록을 페이징하여 반환합니다.
       tags:
         - 매체
@@ -266,7 +266,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 매체 상세 정보 조회 (미구현)
+      summary: 특정 매체 상세 정보 조회
       description: 특정 매체의 상세 정보를 반환합니다. AI, 전문가, 대중, 사용자 평가 성향과 구독 정보가 포함됩니다.
       tags:
         - 매체
@@ -301,7 +301,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 매체 구독 (미구현)
+      summary: 매체 구독
       description: 사용자가 특정 매체를 구독합니다.
       tags:
         - 매체
@@ -340,7 +340,7 @@ paths:
     delete:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 매체 구독 취소 (미구현)
+      summary: 매체 구독 취소
       description: 사용자가 특정 매체의 구독을 취소합니다.
       tags:
         - 매체
@@ -381,7 +381,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 매체 정치성향 평가 (미구현)
+      summary: 매체 정치성향 평가
       description: 사용자가 특정 매체의 정치적 성향을 평가합니다. 이 평가는 userEvaluatedPerspective 필드에 저장됩니다.
       tags:
         - 매체
@@ -422,7 +422,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 평가 성향이 있는 매체 목록 조회 (미구현)
+      summary: 사용자 평가 성향이 있는 매체 목록 조회
       description: 사용자가 정치적 성향을 평가한 매체들의 목록을 반환합니다. userEvaluatedPerspective가 설정된 매체만 포함됩니다.
       tags:
         - 매체
