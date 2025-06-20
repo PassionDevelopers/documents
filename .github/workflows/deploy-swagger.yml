@@ -95,6 +95,12 @@ jobs:
         
         # Copy spec file
         cp "$PROD_FILE" "swagger-ui/prod/$SPEC_FILENAME"
+        
+        # Copy components file if it exists
+        if [ -f "prod/components.yml" ]; then
+          cp "prod/components.yml" "swagger-ui/prod/components.yml"
+          echo "✅ Components file copied"
+        fi
         echo "✅ Production environment generated"
 
     - name: Generate Main Index Page
