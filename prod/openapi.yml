@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: 다시 스탠드 개발환경 API
+  title: 다시 스탠드 프로덕션 환경 API
   description: |
     다양한 정치적 관점에서 뉴스를 제공하는 서비스의 API입니다.
     동일 이슈에 대한 다양한 출처의 뉴스를 비교할 수 있게 해주는 플랫폼입니다.
@@ -10,8 +10,8 @@ info:
     email: api@dasi-stand.com
 
 servers:
-  - url: https://83j7qkg3ig.execute-api.ap-northeast-2.amazonaws.com
-    description: 개발 서버
+  - url: https://nygpoiuc9k.execute-api.ap-northeast-2.amazonaws.com
+    description: 프로덕션 서버
 
 security:
   - bearerAuth: []
@@ -1040,6 +1040,6 @@ components:
     lambda-integration:
       type: aws_proxy
       httpMethod: POST
-      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_dev/invocations
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_prod/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
