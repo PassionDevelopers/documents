@@ -196,47 +196,48 @@ schemas:
     description: 사용자 상세 정치성향 응답
     properties:
       politics:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: 정치 분야 성향 점수 (0=보수, 100=진보)
-        example: 65
+        type: array
+        items:
+          type: integer
+        description: 정치 부문에서 [진보, 중도, 보수] 점수
+        example: [30, 40, 30]
       economy:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: 경제 분야 성향 점수 (0=보수, 100=진보)
-        example: 45
+        type: array
+        items:
+          type: integer
+        description: 경제 부문에서 [진보, 중도, 보수] 점수
+        example: [20, 50, 30]
       society:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: 사회 분야 성향 점수 (0=보수, 100=진보)
-        example: 70
+        type: array
+        items:
+          type: integer
+        description: 사회 부문에서 [진보, 중도, 보수] 점수
+        example: [25, 50, 25]
       culture:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: 생활/문화 분야 성향 점수 (0=보수, 100=진보)
-        example: 55
+        type: array
+        items:
+          type: integer
+        description: 생활/문화 부문에서 [진보, 중도, 보수] 점수
+        example: [35, 40, 25]
       technology:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: IT/과학 분야 성향 점수 (0=보수, 100=진보)
-        example: 80
+        type: array
+        items:
+          type: integer
+        description: IT/과학 부문에서 [진보, 중도, 보수] 점수
+        example: [30, 50, 20]
       international:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: 세계 분야 성향 점수 (0=보수, 100=진보)
-        example: 60
+        type: array
+        items:
+          type: integer
+        description: 세계 부문에서 [진보, 중도, 보수] 점수
+        example: [40, 40, 20]
       overall:
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: 종합 성향 점수 (6개 카테고리 평균)
-        example: 62
+        type: array
+        items:
+          type: integer
+        description: 전체 부문에서 [진보, 중도, 보수] 점수
+        example: [30, 45, 25]
+
     required:
       - politics
       - economy
