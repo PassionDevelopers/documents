@@ -79,9 +79,15 @@ schemas:
         enum: ["left", "center_left", "center", "center_right", "right"]
         description: 정치적 성향
         example: "center"
+      logoUrl:
+        type: string
+        maxLength: 2000
+        description: 미디어 소스 로고 이미지 URL
+        example: "https://cdn.example-news.com/logo.png"
     required:
       - _id
       - name
+      - logoUrl
       - perspective
     additionalProperties: false
 
@@ -585,6 +591,25 @@ schemas:
         description: 업데이트 시간
         example: "2025-05-21T08:15:00Z"
         nullable: true
+      sources:
+        type: array
+        items:
+          $ref: '#/schemas/SourceInfo'
+        description: 이슈에 관련된 미디어 소스 목록
+        example: [
+          {
+            "_id": "507f1f77bcf86cd799439013",
+            "name": "대한일보",
+            "perspective": "center",
+            "logoUrl": "https://cdn.example-news.com/logo.png"
+          },
+          {
+            "_id": "507f1f77bcf86cd799439014",
+            "name": "중앙뉴스",
+            "perspective": "right",
+            "logoUrl": "https://cdn.example-news.com/logo2.png"
+          }
+        ]
     required:
       - _id
       - title
@@ -800,18 +825,18 @@ schemas:
       - totalCount
     additionalProperties: false
 
-  IssueDetailFullResponse:
-    type: object
-    description: 이슈 상세 전체 응답 모델
-    properties:
-      issue:
-        $ref: '#/schemas/IssueDetailResponse'
-      articles:
-        $ref: '#/schemas/ArticleListResponse'
-    required:
-      - issue
-      - articles
-    additionalProperties: false
+  # IssueDetailFullResponse:
+  #   type: object
+  #   description: 이슈 상세 전체 응답 모델
+  #   properties:
+  #     issue:
+  #       $ref: '#/schemas/IssueDetailResponse'
+  #     articles:
+  #       $ref: '#/schemas/ArticleListResponse'
+  #   required:
+  #     - issue
+  #     - articles
+  #   additionalProperties: false
 
   # ============== 기사 관련 모델 ==============
   ArticleResponse:
