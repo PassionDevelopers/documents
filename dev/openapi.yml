@@ -96,7 +96,9 @@ paths:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
       summary: 특정 이슈 상세 정보 조회
-      description: 특정 이슈의 상세 정보와 다양한 관점의 뉴스 기사를 반환합니다.
+      description: |
+        특정 이슈의 상세 정보와 다양한 관점의 뉴스 기사를 반환합니다.
+        incrementViewCount 파라미터를 통해 조회수 증가 여부를 제어할 수 있습니다.
       tags:
         - 이슈
       parameters:
@@ -106,6 +108,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: incrementViewCount
+          in: query
+          description: 조회수를 증가시킬지 여부 (기본값 true) (미구현)
+          required: false
+          schema:
+            type: boolean
+            default: true
       responses:
         '200':
           description: 성공적으로 이슈 상세 정보를 반환
