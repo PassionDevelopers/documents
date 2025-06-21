@@ -110,7 +110,7 @@ paths:
             type: string
         - name: incrementViewCount
           in: query
-          description: 조회수를 증가시킬지 여부 (기본값 true) (미구현)
+          description: 조회수를 증가시킬지 여부 (기본값 true)
           required: false
           schema:
             type: boolean
