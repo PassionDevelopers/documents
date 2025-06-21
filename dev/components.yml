@@ -921,6 +921,36 @@ schemas:
       - lastArticleId
     additionalProperties: false
 
+  SourcesWithArticlesResponse:
+    type: object
+    description: 소스 목록과 기사 목록을 포함하는 응답 모델
+    properties:
+      sources:
+        type: array
+        items:
+          $ref: '#/schemas/SourceInfo'
+        description: 미디어 소스 목록
+        example: [
+          {
+            "_id": "507f1f77bcf86cd799439013",
+            "name": "대한일보",
+            "perspective": "center",
+            "logoUrl": "https://cdn.example-news.com/logo.png"
+          },
+          {
+            "_id": "507f1f77bcf86cd799439014",
+            "name": "중앙뉴스",
+            "perspective": "right",
+            "logoUrl": "https://cdn.example-news.com/logo2.png"
+          }
+        ]
+      articles:
+        $ref: '#/schemas/ArticleListResponse'
+    required:
+      - sources
+      - articles
+    additionalProperties: false
+
   # ============== 에러 관련 모델 ==============
   ErrorDetail:
     type: object
