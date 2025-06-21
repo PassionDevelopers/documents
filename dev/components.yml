@@ -648,11 +648,13 @@ schemas:
             description: 우성향 키워드
             example: ["국가안보", "산업보호"]
             nullable: true
-          nextIssueId:
-            type: string
-            description: 다음 이슈 ID
-            example: "507f1f77bcf86cd799439012"
-            nullable: true
+          nextIssueIds:
+            type: array
+            items:
+              type: string
+              minLength: 1
+              description: 다음 이슈 ID 목록
+              example: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"]
         required:
           - leftSummary
           - centerSummary
