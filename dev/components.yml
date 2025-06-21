@@ -951,6 +951,19 @@ schemas:
       - articles
     additionalProperties: false
 
+  TopicsWithIssuesResponse:
+    type: object
+    description: 토픽 목록과 이슈 목록을 포함하는 응답 모델
+    properties:
+      topics:
+        $ref: '#/schemas/TopicListResponse'
+      issues:
+        $ref: '#/schemas/IssueListResponse'
+    required:
+      - topics
+      - issues
+    additionalProperties: false
+
   # ============== 에러 관련 모델 ==============
   ErrorDetail:
     type: object
