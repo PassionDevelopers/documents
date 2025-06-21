@@ -1,5 +1,3 @@
-
-
 schemas:
   # ============== 공통/기본 모델 ==============
   CoverageSpectrum:
@@ -760,6 +758,20 @@ schemas:
       - issues
       - hasMore
       - lastIssueId
+    additionalProperties: false
+
+  IssueQueryParamsResponse:
+    type: object
+    description: 이슈 쿼리 파라미터 목록 응답 모델
+    properties:
+      queryParams:
+        type: array
+        items:
+          type: string
+        description: /issues 엔드포인트에서 사용 가능한 type 쿼리 파라미터 목록
+        example: ["hot", "daily", "for-you", "blind-spot", "blind-spot-left", "blind-spot-right"]
+    required:
+      - queryParams
     additionalProperties: false
 
   HotIssueListResponse:
