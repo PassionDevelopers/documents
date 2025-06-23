@@ -16,15 +16,6 @@ servers:
 security:
   - bearerAuth: []
 
-# CORS 정책 정보
-x-cors:
-  enabled: true
-  origins:
-    - "*"
-  methods:
-    - GET
-  maxAge: 86400  # 24시간
-
 tags:
   - name: 이슈
     description: 주요 뉴스 이슈 관련 API
