@@ -398,7 +398,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/MediaListResponse'
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      $ref: './components.yml#/schemas/SourceInfo'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
