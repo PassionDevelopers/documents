@@ -210,6 +210,51 @@ schemas:
       - overall
     additionalProperties: false
 
+  UserPoliticalPreferenceDetailHistory:
+    type: object
+    description: 사용자 정치성향 기록 컬렉션 모델
+    properties:
+      userEmail:
+        type: string
+        description: 사용자 이메일
+        example: "user@example.com"
+      recordedAt:
+        type: string
+        format: date-time
+        description: 기록된 시간
+        example: "2025-06-24T12:00:00Z"
+      politicalPreferenceDetail:
+        $ref: '#/schemas/PoliticalPreferenceDetailResponse'
+    required:
+      - userEmail
+      - recordedAt
+      - politicalPreferenceDetail
+    additionalProperties: false
+
+  PoliticalPreferenceDetailHistoryResponse:
+    type: object
+    description: 사용자 정치성향 기록 응답
+    properties:
+      hasMore:
+        type: boolean
+        description: 추가 기록 여부
+        example: true
+      lastRecordedAt:
+        type: string
+        format: date-time
+        description: 마지막 기록 시간
+        example: "2025-06-24T12:00:00Z"
+      history:
+        type: array
+        items:
+          $ref: '#/schemas/UserPoliticalPreferenceDetailHistory'
+        description: 정치성향 기록 목록
+    required:
+      - hasMore
+      - lastRecordedAt
+      - history
+    additionalProperties: false
+
   WatchHistoryRequest:
     type: object
     description: 시청 기록 저장 요청

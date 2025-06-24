@@ -723,7 +723,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/PoliticalPreferenceDetailResponse'
+                $ref: './components.yml#/schemas/PoliticalPreferenceDetailHistoryResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
