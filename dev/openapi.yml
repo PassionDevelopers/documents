@@ -1101,7 +1101,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/TopicDetailListResponse'
+                $ref: './components.yml#/schemas/TopicListResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
