@@ -342,7 +342,7 @@ paths:
                   sources:
                     type: array
                     items:
-                      $ref: './components.yml#/schemas/SourceInfo'
+                      $ref: './components.yml#/schemas/SourceInfoWithSubscription'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':

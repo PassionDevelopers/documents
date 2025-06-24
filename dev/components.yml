@@ -90,6 +90,20 @@ schemas:
       - logoUrl
       - perspective
     additionalProperties: false
+
+  SourceInfoWithSubscription:
+    allOf:
+      - $ref: '#/schemas/SourceInfo'
+      - type: object
+        description: 구독 여부가 포함된 미디어 소스 정보
+        properties:
+          isSubscribed:
+            type: boolean
+            description: 사용자의 구독 여부
+            example: true
+        required:
+          - isSubscribed
+        additionalProperties: false
   
   SourceInfoList:
     type: array
