@@ -888,6 +888,12 @@ paths:
           description: 마지막으로 읽은 토픽의 아이디 (페이징용)
           schema:
             type: string
+        - name: category
+          in: query
+          description: 특정 카테고리의 토픽만 조회 (선택적)
+          schema:
+            type: string
+            enum: ["politics", "economy", "society", "culture", "international"]
       responses:
         '200':
           description: 성공적으로 토픽 목록을 반환
