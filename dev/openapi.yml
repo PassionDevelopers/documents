@@ -331,34 +331,18 @@ paths:
         다양한 매체의 목록을 반환합니다.
       tags:
         - 매체
-      parameters:
-        - name: type
-          in: query
-          description: 조회할 매체 타입
-          required: true
-          schema:
-            type: string
-            enum: ["all", "evaluated"]
-        - name: limit
-          in: query
-          description: 반환할 매체 수 (기본값 10)
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
-        - name: lastMediaId
-          in: query
-          description: 마지막으로 읽은 매체의 아이디 (페이징용)
-          schema:
-            type: string
       responses:
         '200':
           description: 성공적으로 매체 목록을 반환
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/MediaListResponse'
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      $ref: './components.yml#/schemas/SourceInfo'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':

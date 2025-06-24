@@ -90,6 +90,48 @@ schemas:
       - logoUrl
       - perspective
     additionalProperties: false
+  
+  SourceInfoList:
+    type: array
+    description: 미디어 소스 목록
+    items:
+      $ref: '#/schemas/SourceInfo'
+    minItems: 1
+    example: [
+      {
+        "_id": "507f1f77bcf86cd799439013",
+        "name": "대한일보",
+        "perspective": "center",
+        "logoUrl": "https://cdn.example-news.com/logo.png"
+      },
+      {
+        "_id": "507f1f77bcf86cd799439014",
+        "name": "중앙뉴스",
+        "perspective": "right",
+        "logoUrl": "https://cdn.example-news.com/logo2.png"
+      }
+    ]
+  
+  SourceInfoListResponse:
+    type: object
+    description: 미디어 소스 목록 응답 모델
+    properties:
+      sources:
+        $ref: '#/schemas/SourceInfoList'
+        description: 미디어 소스 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastSourceId:
+        type: string
+        description: 마지막 소스 ID (페이징용)
+        example: "507f1f77bcf86cd799439013"
+    required:
+      - sources
+      - hasMore
+      - lastSourceId
+    additionalProperties: false
 
   SimpleSuccessResponse:
     type: object
