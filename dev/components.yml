@@ -326,14 +326,11 @@ schemas:
         maxLength: 50
         description: 토픽 이름
         example: "북한"
-      categories:
-        type: array
-        items:
-          type: string
-          enum: ["politics", "economy", "society", "culture", "international", "technology"]
-        minItems: 1
-        description: 토픽이 속하는 카테고리 목록
-        example: ["politics", "international"]
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 토픽 카테고리
+        example: "international"
       issuesCount:
         type: integer
         minimum: 0
@@ -346,7 +343,7 @@ schemas:
     required:
       - _id
       - name
-      - categories
+      - category
       - issuesCount
       - isSubscribed
     additionalProperties: false
