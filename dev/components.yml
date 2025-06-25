@@ -84,59 +84,27 @@ schemas:
         maxLength: 2000
         description: 미디어 소스 로고 이미지 URL
         example: "https://cdn.example-news.com/logo.png"
-      isSubscribed:
-        type: boolean
-        description: 사용자의 구독 여부
-        example: true
     required:
       - _id
       - name
       - logoUrl
       - perspective
-      - isSubscribed
     additionalProperties: false
   
-  SourceInfoList:
-    type: array
-    description: 미디어 소스 목록
-    items:
-      $ref: '#/schemas/SourceInfo'
-    minItems: 1
-    example: [
-      {
-        "_id": "507f1f77bcf86cd799439013",
-        "name": "대한일보",
-        "perspective": "center",
-        "logoUrl": "https://cdn.example-news.com/logo.png"
-      },
-      {
-        "_id": "507f1f77bcf86cd799439014",
-        "name": "중앙뉴스",
-        "perspective": "right",
-        "logoUrl": "https://cdn.example-news.com/logo2.png"
-      }
-    ]
-  
-  SourceInfoListResponse:
+  SourceInfoResponse:
     type: object
-    description: 미디어 소스 목록 응답 모델
-    properties:
-      sources:
-        $ref: '#/schemas/SourceInfoList'
-        description: 미디어 소스 목록
-      hasMore:
-        type: boolean
-        description: 더 많은 데이터가 있는지 여부
-        example: true
-      lastSourceId:
-        type: string
-        description: 마지막 소스 ID (페이징용)
-        example: "507f1f77bcf86cd799439013"
-    required:
-      - sources
-      - hasMore
-      - lastSourceId
-    additionalProperties: false
+    description: 미디어 소스 응답 모델
+    allOf:
+      - $ref: '#/schemas/SourceInfo'
+      - type: object
+        properties:
+          isSubscribed:
+            type: boolean
+            description: 사용자의 구독 여부
+            example: true
+        required:
+          - isSubscribed
+        additionalProperties: false
 
   SimpleSuccessResponse:
     type: object
@@ -688,7 +656,7 @@ schemas:
       sources:
         type: array
         items:
-          $ref: '#/schemas/SourceInfo'
+          $ref: '#/schemas/SourceInfoResponse'
         description: 이슈에 관련된 미디어 소스 목록
         example: [
           {
@@ -980,7 +948,7 @@ schemas:
         example: "https://example-news.com/images/article123.jpg"
         nullable: true
       source:
-        $ref: '#/schemas/SourceInfo'
+        $ref: '#/schemas/SourceInfoResponse'
     required:
       - _id
       - title
@@ -1022,7 +990,7 @@ schemas:
       sources:
         type: array
         items:
-          $ref: '#/schemas/SourceInfo'
+          $ref: '#/schemas/SourceInfoResponse'
         description: 미디어 소스 목록
         example: [
           {
