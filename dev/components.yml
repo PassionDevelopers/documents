@@ -84,26 +84,17 @@ schemas:
         maxLength: 2000
         description: 미디어 소스 로고 이미지 URL
         example: "https://cdn.example-news.com/logo.png"
+      isSubscribed:
+        type: boolean
+        description: 사용자의 구독 여부
+        example: true
     required:
       - _id
       - name
       - logoUrl
       - perspective
+      - isSubscribed
     additionalProperties: false
-
-  SourceInfoWithSubscription:
-    allOf:
-      - $ref: '#/schemas/SourceInfo'
-      - type: object
-        description: 구독 여부가 포함된 미디어 소스 정보
-        properties:
-          isSubscribed:
-            type: boolean
-            description: 사용자의 구독 여부
-            example: true
-        required:
-          - isSubscribed
-        additionalProperties: false
   
   SourceInfoList:
     type: array
@@ -697,7 +688,7 @@ schemas:
       sources:
         type: array
         items:
-          $ref: '#/schemas/SourceInfoWithSubscription'
+          $ref: '#/schemas/SourceInfo'
         description: 이슈에 관련된 미디어 소스 목록
         example: [
           {
@@ -989,7 +980,7 @@ schemas:
         example: "https://example-news.com/images/article123.jpg"
         nullable: true
       source:
-        $ref: '#/schemas/SourceInfoWithSubscription'
+        $ref: '#/schemas/SourceInfo'
     required:
       - _id
       - title
@@ -1031,7 +1022,7 @@ schemas:
       sources:
         type: array
         items:
-          $ref: '#/schemas/SourceInfoWithSubscription'
+          $ref: '#/schemas/SourceInfo'
         description: 미디어 소스 목록
         example: [
           {
