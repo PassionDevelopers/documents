@@ -697,7 +697,7 @@ schemas:
       sources:
         type: array
         items:
-          $ref: '#/schemas/SourceInfo'
+          $ref: '#/schemas/SourceInfoWithSubscription'
         description: 이슈에 관련된 미디어 소스 목록
         example: [
           {
@@ -989,7 +989,7 @@ schemas:
         example: "https://example-news.com/images/article123.jpg"
         nullable: true
       source:
-        $ref: '#/schemas/SourceInfo'
+        $ref: '#/schemas/SourceInfoWithSubscription'
     required:
       - _id
       - title
@@ -1031,7 +1031,7 @@ schemas:
       sources:
         type: array
         items:
-          $ref: '#/schemas/SourceInfo'
+          $ref: '#/schemas/SourceInfoWithSubscription'
         description: 미디어 소스 목록
         example: [
           {
