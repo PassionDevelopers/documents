@@ -517,8 +517,6 @@ schemas:
         description: 매체 로고 이미지 URL
         example: "https://cdn.daehan-daily.com/logo.png"
         nullable: true
-      recentIssues:
-        $ref: '#/schemas/IssueListResponse'
       recentArticles:
         $ref: '#/schemas/ArticleListResponse'
       isSubscribed:
