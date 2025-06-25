@@ -593,6 +593,7 @@ paths:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
       summary: 매체 정치성향 평가
+      deprecated: true
       description: 사용자가 특정 매체의 정치적 성향을 평가합니다. 이 평가는 userEvaluatedPerspective 필드에 저장됩니다.
       tags:
         - 매체
