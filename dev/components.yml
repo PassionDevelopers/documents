@@ -106,6 +106,22 @@ schemas:
           - isSubscribed
         additionalProperties: false
 
+  SourceInfoWithEvaluationResponse:
+    type: object
+    description: 미디어 소스 응답 모델
+    allOf:
+      - $ref: '#/schemas/SourceInfoResponse'
+      - type: object
+        properties:
+          evaluation:
+            type: string
+            enum: ["left", "center_left", "center", "center_right", "right"]
+            description: 사용자가 평가한 성향
+            example: true
+        required:
+          - evaluation
+        additionalProperties: false
+
   SimpleSuccessResponse:
     type: object
     description: 간단한 성공 응답
