@@ -755,7 +755,7 @@ schemas:
               minLength: 1
               description: 다음 이슈 ID 목록
               example: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"]
-          articleList:
+          articles:
             $ref: '#/schemas/ArticleListResponse'
         required:
           - leftSummary
