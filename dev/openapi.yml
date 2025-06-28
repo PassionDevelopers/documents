@@ -919,7 +919,7 @@ paths:
           description: 특정 카테고리의 토픽만 조회 (선택적)
           schema:
             type: string
-            enum: ["politics", "economy", "society", "culture", "international"]
+            enum: ["politics", "economy", "society", "culture", "international", "technology"]
       responses:
         '200':
           description: 성공적으로 토픽 목록을 반환
