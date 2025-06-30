@@ -876,9 +876,13 @@ schemas:
       queryParams:
         type: array
         items:
-          type: string
+          type: array
+          items:
+            type: string
+          description: 쿼리 파라미터 이름과 뜻
+          example: ["daily", "데일리"]
         description: /issues 엔드포인트에서 사용 가능한 type 쿼리 파라미터 목록
-        example: ["hot", "daily", "for-you", "blind-spot", "blind-spot-left", "blind-spot-right"]
+        example: [["daily","데일리"], ["for-you", "폴 유"], ["hot", "핫"]]
     required:
       - queryParams
     additionalProperties: false
