@@ -25,6 +25,8 @@ tags:
     description: 미디어 매체 관련 API
   - name: 토픽
     description: 뉴스 토픽 관련 API
+  - name: 관리자
+    description: 관리자용 api
 
 
 paths:
@@ -1213,6 +1215,40 @@ paths:
           $ref: './components.yml#/responses/TooManyRequests'
         '500':
           $ref: './components.yml#/responses/ServerError'
+  
+  /api/cluster-info:
+    post:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/admin-lambda-integration"
+      summary: 클러스터 인포 트리거
+      description: |
+        클러스터 인포를 트리거합니다.
+      tags:
+        - 관리자
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueIds:
+                  type: array
+                  items:
+                    type: string
+                    example: "issue-12345"
+              description: 이슈 ID 목록을 포함합니다. 클러스터 인포를 생성할 이슈들의 ID를 배열로 전달합니다.
+              required:
+                - issueIds
+      responses:
+        '200':
+          description: 성공적으로 처리 결과를 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
 
 components:
   securitySchemes:
@@ -1229,5 +1265,11 @@ components:
       type: aws_proxy
       httpMethod: POST
       uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_dev/invocations
+      payloadFormatVersion: "2.0"
+      credentials: arn:aws:iam::137470820403:role/API_GATEWAY
+    admin-lambda-integration:
+      type: aws_proxy
+      httpMethod: POST
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_cluster_info_dev/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
