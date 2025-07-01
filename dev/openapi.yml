@@ -1295,7 +1295,7 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
   
-  /api/cluster-info:
+  /admin/cluster-info:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/admin-lambda-integration"
