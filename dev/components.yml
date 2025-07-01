@@ -537,10 +537,10 @@ schemas:
             description: 대중들이 평가한 매체의 정치적 성향 (0=보수, 100=진보)
             example: 100
             nullable: true
-          totalIssuesCount:
+          followersCount:
             type: integer
             minimum: 0
-            description: 해당 매체에서 다룬 총 이슈 개수
+            description: 해당 매체를 구독한 사용자의 수
             example: 1250
           isSubscribed:
             type: boolean
