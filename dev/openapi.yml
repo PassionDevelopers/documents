@@ -773,7 +773,6 @@ paths:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
       summary: 사용자 시청 기록 조회
-      deprecated: true
       description: 사용자의 이슈 시청 기록을 최신순으로 반환합니다.
       tags:
         - 사용자
