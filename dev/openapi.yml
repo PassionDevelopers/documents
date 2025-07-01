@@ -894,6 +894,86 @@ paths:
           $ref: './components.yml#/responses/TooManyRequests'
         '500':
           $ref: './components.yml#/responses/ServerError'
+    put:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 평가 변경
+      description: 이슈에 대한 본인의 판단 결과를 변경합니다.
+      tags:
+        - 사용자
+      parameters:
+        - name: issueId
+          in: path
+          description: 평가를 변경할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                perspective:
+                  type: string
+                  enum: ["left", "center", "right"]
+                  example: "center"
+              required:
+                - perspective
+              additionalProperties: false
+      responses:
+        '200':
+          description: 성공적으로 이슈 평가를 변경
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 평가 취소
+      description: 이슈에 대한 본인의 판단 결과를 취소합니다.
+      tags:
+        - 사용자
+      parameters:
+        - name: issueId
+          in: path
+          description: 평가를 취소할 이슈 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 이슈 평가를 취소
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
 
   /topics:
     get:
