@@ -145,6 +145,196 @@ schemas:
       - timestamp
     additionalProperties: false
 
+  AdminIssueCreateRequest:
+    type: object
+    description: 새 이슈 생성 요청 (관리자 전용)
+    properties:
+      title:
+        type: string
+        description: 이슈 제목
+        example: "새로운 정치 이슈"
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 이슈 카테고리
+        example: "politics"
+      summary:
+        type: string
+        description: 이슈 요약
+        example: "새로운 정치 이슈에 대한 간략한 요약입니다."
+      keywords:
+        type: array
+        items:
+          type: string
+        description: 이슈 관련 키워드
+        example: ["정치", "선거"]
+      imageUrl:
+        type: string
+        format: uri
+        description: 이슈 관련 이미지 URL
+        example: "https://example.com/new_issue.jpg"
+      leftSummary:
+        type: string
+        description: 좌성향 관점 요약
+      centerSummary:
+        type: string
+        description: 중도 관점 요약
+      rightSummary:
+        type: string
+        description: 우성향 관점 요약
+      biasComparison:
+        type: string
+        description: 편향 비교 분석
+      leftKeywords:
+        type: array
+        items:
+          type: string
+      centerKeywords:
+        type: array
+        items:
+          type: string
+      rightKeywords:
+        type: array
+        items:
+          type: string
+      createdAt:
+        type: string
+        format: date-time
+        description: 생성 시간 (ISO 8601)
+      updatedAt:
+        type: string
+        format: date-time
+        description: 업데이트 시간 (ISO 8601)
+    required:
+      - title
+      - category
+    additionalProperties: false
+
+  AdminIssueUpdateRequest:
+    type: object
+    description: 이슈 수정 요청 (관리자 전용)
+    properties:
+      title:
+        type: string
+        description: 이슈 제목
+        example: "수정된 정치 이슈"
+      summary:
+        type: string
+        description: 이슈 요약
+        example: "수정된 정치 이슈에 대한 간략한 요약입니다."
+      keywords:
+        type: array
+        items:
+          type: string
+        description: 이슈 관련 키워드
+        example: ["정치", "선거", "개정"]
+      imageUrl:
+        type: string
+        format: uri
+        description: 이슈 관련 이미지 URL
+        example: "https://example.com/updated_issue.jpg"
+      leftSummary:
+        type: string
+        description: 좌성향 관점 요약
+      centerSummary:
+        type: string
+        description: 중도 관점 요약
+      rightSummary:
+        type: string
+        description: 우성향 관점 요약
+      biasComparison:
+        type: string
+        description: 편향 비교 분석
+      leftKeywords:
+        type: array
+        items:
+          type: string
+      centerKeywords:
+        type: array
+        items:
+          type: string
+      rightKeywords:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+
+  AdminArticleAddRequest:
+    type: object
+    description: 이슈에 기사 추가 요청 (관리자 전용)
+    properties:
+      articleIdList:
+        type: array
+        items:
+          type: string
+          example: "article-12345"
+        description: 이슈에 추가할 기사 ID 목록
+    required:
+      - articleIdList
+    additionalProperties: false
+
+  AdminArticleUpdateRequest:
+    type: object
+    description: 기사 수정 요청 (관리자 전용)
+    properties:
+      title:
+        type: string
+        description: 기사 제목
+        example: "수정된 기사 제목"
+      summary:
+        type: string
+        description: 기사 요약
+        example: "수정된 기사 요약입니다."
+      content:
+        type: string
+        description: 기사 내용
+      reporter:
+        type: string
+        description: 기자 이름
+      url:
+        type: string
+        format: uri
+        description: 기사 URL
+      imageUrl:
+        type: string
+        format: uri
+        description: 기사 이미지 URL
+      keywords:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+
+  AdminSimilarArticlesResponse:
+    type: object
+    description: 유사 기사 조회 응답 (관리자 전용)
+    properties:
+      message:
+        type: string
+        description: 응답 메시지
+        example: "유사한 기사들을 성공적으로 조회했습니다."
+      targetIssue:
+        $ref: '#/schemas/IssueResponse'
+        description: 기준 이슈 정보
+      similarArticles:
+        type: array
+        items:
+          allOf:
+            - $ref: '#/schemas/ArticleResponse'
+            - type: object
+              properties:
+                similarity:
+                  type: number
+                  format: float
+                  description: 기준 이슈와의 코사인 유사도
+                  example: 0.85
+        description: 유사 기사 목록 (유사도 포함)
+    required:
+      - message
+      - targetIssue
+      - similarArticles
+    additionalProperties: false
+
   # ============== 사용자/인증 관련 모델 ==============
   UserRegistrationRequest:
     type: object

@@ -1329,6 +1329,272 @@ paths:
         '400':
           $ref: './components.yml#/responses/BadRequest'
 
+  /admin/issues:
+    post:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 생성 (관리자 전용)
+      description: 새로운 이슈를 생성합니다.
+      tags:
+        - 관리자
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminIssueCreateRequest'
+      responses:
+        '200':
+          description: 성공적으로 이슈 생성
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}:
+    patch:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 수정 (관리자 전용)
+      description: 특정 이슈의 정보를 수정합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 수정할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminIssueUpdateRequest'
+      responses:
+        '200':
+          description: 성공적으로 이슈 수정
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 삭제 (관리자 전용)
+      description: 특정 이슈를 삭제합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 삭제할 이슈 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 이슈 삭제
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}/articles:
+    patch:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈에 기사 추가 (관리자 전용)
+      description: 특정 이슈에 기사를 추가합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 기사를 추가할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminArticleAddRequest'
+      responses:
+        '200':
+          description: 성공적으로 기사 추가
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}/articles/{articleId}:
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈에서 기사 제거 (관리자 전용)
+      description: 특정 이슈에서 기사를 제거합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 기사를 제거할 이슈 ID
+          required: true
+          schema:
+            type: string
+        - name: articleId
+          in: path
+          description: 제거할 기사 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 기사 제거
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/articles/{articleId}:
+    patch:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 기사 수정 (관리자 전용)
+      description: 특정 기사의 정보를 수정합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: articleId
+          in: path
+          description: 수정할 기사 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminArticleUpdateRequest'
+      responses:
+        '200':
+          description: 성공적으로 기사 수정
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}/similar-articles:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 특정 이슈와 유사한 기사 조회 (관리자 전용)
+      description: 특정 이슈의 centroid를 기준으로 유사한 기사들을 정렬해서 반환합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 기준 이슈 ID
+          required: true
+          schema:
+            type: string
+        - name: days
+          in: query
+          description: 최근 N일간의 기사만 조회 (기본값 2일)
+          schema:
+            type: integer
+            default: 2
+            minimum: 1
+            maximum: 30
+        - name: limit
+          in: query
+          description: 반환할 기사 수 (기본값 20)
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: 성공적으로 유사 기사 조회
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/AdminSimilarArticlesResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
 components:
   securitySchemes:
       bearerAuth:
