@@ -907,6 +907,11 @@ schemas:
             type: string
             description: 좌성향 관점 요약
             example: "미국의 중국에 대한 새로운 관세 부과는 보호무역주의적 조치입니다."
+          userEvaluation:
+            type: string
+            enum: ["left", "center", "right"]
+            description: 사용자가 평가한 이슈의 정치적 성향
+            example: "center"
           centerSummary:
             type: string
             description: 중도 관점 요약
