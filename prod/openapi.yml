@@ -1636,19 +1636,19 @@ components:
     lambda-integration:
       type: aws_proxy
       httpMethod: POST
-      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_dev/invocations
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_prod/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
     admin-lambda-integration:
       type: aws_proxy
       httpMethod: POST
-      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_cluster_info_dev/invocations
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_cluster_info_prod/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
     admin-cluster-invocation:
       type: aws_proxy
       httpMethod: POST
-      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_clustering_dev/invocations
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_clustering_prod/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
     
