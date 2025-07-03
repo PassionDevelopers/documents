@@ -792,6 +792,14 @@ schemas:
         type: string
         description: 이슈 ID
         example: "507f1f77bcf86cd799439011"
+      tags:
+        type: array
+        items:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description: 이슈 태그 목록
+        example: ["사각지대", "심한대립"]
       title:
         type: string
         description: 이슈 제목
