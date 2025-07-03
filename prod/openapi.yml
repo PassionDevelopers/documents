@@ -16,15 +16,6 @@ servers:
 security:
   - bearerAuth: []
 
-# CORS 정책 정보
-x-cors:
-  enabled: true
-  origins:
-    - "*"
-  methods:
-    - GET
-  maxAge: 86400  # 24시간
-
 tags:
   - name: 이슈
     description: 주요 뉴스 이슈 관련 API
@@ -34,6 +25,8 @@ tags:
     description: 미디어 매체 관련 API
   - name: 토픽
     description: 뉴스 토픽 관련 API
+  - name: 관리자
+    description: 관리자용 api
 
 
 paths:
@@ -41,7 +34,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 이슈 목록 조회 (미구현)
+      summary: 이슈 목록 조회
       description: |
         type 파라미터에 따라 다양한 이슈 목록을 반환합니다.
         - hot: 핫이슈 목록 (고정 개수, 이미지 URL 필수)
@@ -91,12 +84,42 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
+  /issues/query-params:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 쿼리 파라미터 목록 조회
+      description: |
+        /issues 엔드포인트에서 사용할 수 있는 type 쿼리 파라미터의 종류를 반환합니다.
+        클라이언트에서 동적으로 이슈 타입 목록을 구성할 때 사용할 수 있습니다.
+      tags:
+        - 이슈
+      responses:
+        '200':
+          description: 성공적으로 쿼리 파라미터 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/IssueQueryParamsResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
   /issues/{issueId}:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 이슈 상세 정보 조회 (미구현)
-      description: 특정 이슈의 상세 정보와 다양한 관점의 뉴스 기사를 반환합니다.
+      summary: 특정 이슈 상세 정보 조회
+      description: |
+        특정 이슈의 상세 정보와 다양한 관점의 뉴스 기사를 반환합니다.
+        incrementViewCount 파라미터를 통해 조회수 증가 여부를 제어할 수 있습니다.
       tags:
         - 이슈
       parameters:
@@ -106,13 +129,75 @@ paths:
           required: true
           schema:
             type: string
+        - name: incrementViewCount
+          in: query
+          description: 조회수를 증가시킬지 여부 (기본값 true)
+          required: false
+          schema:
+            type: boolean
+            default: true
       responses:
         '200':
           description: 성공적으로 이슈 상세 정보를 반환
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/IssueDetailFullResponse'
+                $ref: './components.yml#/schemas/IssueDetailResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /issues/{issueId}/articles:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 특정 이슈의 기사 목록 조회
+      description: 특정 이슈에 속한 기사들의 목록을 페이징하여 반환합니다. 다양한 정치적 관점의 기사들을 확인할 수 있습니다.
+      tags:
+        - 이슈
+      parameters:
+        - name: issueId
+          in: path
+          description: 이슈 ID
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 반환할 기사 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastArticleId
+          in: query
+          description: 마지막으로 읽은 기사의 아이디 (페이징용)
+          schema:
+            type: string
+        - name: perspective
+          in: query
+          description: 특정 정치적 관점의 기사만 조회 (선택적)
+          schema:
+            type: string
+            enum: ["left", "center", "right", "all"]
+            default: "all"
+      responses:
+        '200':
+          description: 성공적으로 이슈의 기사 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/ArticleListResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
@@ -130,7 +215,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 구독 이슈 목록 조회 (미구현)
+      summary: 사용자 구독 이슈 목록 조회 
       description: 사용자가 구독한 이슈 목록을 반환합니다.
       tags:
         - 이슈
@@ -170,7 +255,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 이슈 구독 (미구현)
+      summary: 이슈 구독 
       description: 사용자가 특정 이슈를 구독합니다.
       tags:
         - 이슈
@@ -209,7 +294,7 @@ paths:
     delete:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 이슈 구독 취소 (미구현)
+      summary: 이슈 구독 취소 
       description: 사용자가 특정 이슈의 구독을 취소합니다.
       tags:
         - 이슈
@@ -246,35 +331,27 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
-  /media/subscribed:
+  /media:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 관심 매체 목록 조회 (미구현)
-      description: 사용자의 관심 매체 목록을 반환합니다.
+      summary: 매체 목록 조회
+      description: |
+        다양한 매체의 목록을 반환합니다.
       tags:
         - 매체
-      parameters:
-        - name: limit
-          in: query
-          description: 반환할 매체 수 (기본값 10)
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
-        - name: lastMediaId
-          in: query
-          description: 마지막으로 읽은 매체의 아이디 (페이징용)
-          schema:
-            type: string
       responses:
         '200':
-          description: 성공적으로 관심 매체 목록을 반환
+          description: 성공적으로 매체 목록을 반환
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/MediaListResponse'
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      $ref: './components.yml#/schemas/SourceInfoResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
@@ -286,49 +363,104 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
-  /media/{mediaId}/issues:
+  /media/evaluated:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 매체의 이슈 목록 조회 (미구현)
-      description: 특정 매체에서 다룬 이슈들의 목록을 페이징하여 반환합니다.
+      summary: 사용자 평가 매체 목록 조회
+      description: 사용자가 평가한 매체들의 목록을 페이징 없이 반환합니다.
+      deprecated: true
       tags:
         - 매체
-      parameters:
-        - name: mediaId
-          in: path
-          description: 매체 ID
-          required: true
-          schema:
-            type: string
-        - name: limit
-          in: query
-          description: 반환할 이슈 수 (기본값 10)
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
-        - name: lastIssueId
-          in: query
-          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
-          schema:
-            type: string
       responses:
         '200':
-          description: 성공적으로 매체의 이슈 목록을 반환
+          description: 성공적으로 평가 매체 목록을 반환
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/IssueListResponse'
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      $ref: './components.yml#/schemas/SourceInfoWithEvaluationResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
           $ref: './components.yml#/responses/Unauthorized'
         '403':
           $ref: './components.yml#/responses/Forbidden'
-        '404':
-          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /media/subscribed:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 사용자 구독 매체 목록 조회
+      description: 사용자가 구독한 매체들의 목록을 페이징 없이 반환합니다.
+      tags:
+        - 매체
+      responses:
+        '200':
+          description: 성공적으로 구독 매체 목록을 반환
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      $ref: './components.yml#/schemas/SourceInfoResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /media/subscribed/articles:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 사용자 구독 매체의 기사 목록 조회
+      description: 사용자가 구독한 매체에서 발행한 기사들의 목록을 페이징하여 반환합니다.
+      tags:
+        - 매체
+      parameters:
+        - name: limit
+          in: query
+          description: 반환할 기사 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastArticleId
+          in: query
+          description: 마지막으로 읽은 기사의 아이디 (페이징용)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 구독 매체의 기사 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/ArticleListResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
         '429':
           $ref: './components.yml#/responses/TooManyRequests'
         '500':
@@ -338,7 +470,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 매체의 기사 목록 조회 (미구현)
+      summary: 특정 매체의 기사 목록 조회
       description: 특정 매체에서 발행한 기사들의 목록을 페이징하여 반환합니다.
       tags:
         - 매체
@@ -386,7 +518,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 매체 상세 정보 조회 (미구현)
+      summary: 특정 매체 상세 정보 조회
       description: 특정 매체의 상세 정보를 반환합니다. AI, 전문가, 대중, 사용자 평가 성향과 구독 정보가 포함됩니다.
       tags:
         - 매체
@@ -421,7 +553,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 매체 구독 (미구현)
+      summary: 매체 구독
       description: 사용자가 특정 매체를 구독합니다.
       tags:
         - 매체
@@ -460,7 +592,7 @@ paths:
     delete:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 매체 구독 취소 (미구현)
+      summary: 매체 구독 취소
       description: 사용자가 특정 매체의 구독을 취소합니다.
       tags:
         - 매체
@@ -501,7 +633,8 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 매체 정치성향 평가 (미구현)
+      summary: 매체 정치성향 평가
+      deprecated: true
       description: 사용자가 특정 매체의 정치적 성향을 평가합니다. 이 평가는 userEvaluatedPerspective 필드에 저장됩니다.
       tags:
         - 매체
@@ -538,51 +671,11 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
-  /media/user-evaluated:
-    get:
-      x-amazon-apigateway-integration:
-          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 평가 성향이 있는 매체 목록 조회 (미구현)
-      description: 사용자가 정치적 성향을 평가한 매체들의 목록을 반환합니다. userEvaluatedPerspective가 설정된 매체만 포함됩니다.
-      tags:
-        - 매체
-      parameters:
-        - name: limit
-          in: query
-          description: 반환할 매체 수 (기본값 10)
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
-        - name: lastMediaId
-          in: query
-          description: 마지막으로 읽은 매체의 아이디 (페이징용)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 성공적으로 사용자 평가 매체 목록을 반환
-          content:
-            application/json:
-              schema:
-                $ref: './components.yml#/schemas/MediaListResponse'
-        '400':
-          $ref: './components.yml#/responses/BadRequest'
-        '401':
-          $ref: './components.yml#/responses/Unauthorized'
-        '403':
-          $ref: './components.yml#/responses/Forbidden'
-        '429':
-          $ref: './components.yml#/responses/TooManyRequests'
-        '500':
-          $ref: './components.yml#/responses/ServerError'
-
   /user/political-preference:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 정치성향 조회 (미구현)
+      summary: 사용자 정치성향 조회
       description: 사용자의 현재 정치성향을 반환합니다.
       tags:
         - 사용자
@@ -612,7 +705,8 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 정치성향 설정/변경 (미구현)
+      summary: 사용자 정치성향 설정/변경
+      deprecated: true
       description: |
         사용자의 정치성향을 설정하거나 변경합니다.
         JWT 토큰으로 사용자를 식별하며, 조작 방지를 위해 서버에서 검증합니다.
@@ -646,7 +740,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 상세 정치성향 조회 (미구현)
+      summary: 사용자 상세 정치성향 조회
       description: 사용자의 카테고리별 상세 정치성향 점수를 반환합니다.
       tags:
         - 사용자
@@ -656,7 +750,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/PoliticalPreferenceDetailResponse'
+                $ref: './components.yml#/schemas/PoliticalPreferenceDetailHistoryResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
@@ -678,7 +772,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 시청 기록 조회 (미구현)
+      summary: 사용자 시청 기록 조회
       description: 사용자의 이슈 시청 기록을 최신순으로 반환합니다.
       tags:
         - 사용자
@@ -716,7 +810,8 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 시청 기록 저장 (미구현)
+      summary: 시청 기록 저장
+      deprecated: true
       description: 사용자가 기사를 클릭했을 때 시청 기록을 저장합니다. 이슈 ID와 기사 ID를 함께 기록합니다.
       tags:
         - 사용자
@@ -754,7 +849,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 이슈 평가 (미구현)
+      summary: 이슈 평가
       description: 이슈에 대한 본인의 판단 결과 저장
       tags:
         - 사용자
@@ -798,12 +893,92 @@ paths:
           $ref: './components.yml#/responses/TooManyRequests'
         '500':
           $ref: './components.yml#/responses/ServerError'
+    put:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 평가 변경
+      description: 이슈에 대한 본인의 판단 결과를 변경합니다.
+      tags:
+        - 사용자
+      parameters:
+        - name: issueId
+          in: path
+          description: 평가를 변경할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                perspective:
+                  type: string
+                  enum: ["left", "center", "right"]
+                  example: "center"
+              required:
+                - perspective
+              additionalProperties: false
+      responses:
+        '200':
+          description: 성공적으로 이슈 평가를 변경
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 평가 취소
+      description: 이슈에 대한 본인의 판단 결과를 취소합니다.
+      tags:
+        - 사용자
+      parameters:
+        - name: issueId
+          in: path
+          description: 평가를 취소할 이슈 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 이슈 평가를 취소
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
 
   /topics:
     get:
       x-amazon-apigateway-integration:
               $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 토픽 목록 조회 (미구현)
+      summary: 토픽 목록 조회
       description: 모든 토픽의 목록을 반환합니다. 각 토픽에는 관련 카테고리와 이슈 수, 구독 상태가 포함됩니다.
       tags:
         - 토픽
@@ -821,6 +996,12 @@ paths:
           description: 마지막으로 읽은 토픽의 아이디 (페이징용)
           schema:
             type: string
+        - name: category
+          in: query
+          description: 특정 카테고리의 토픽만 조회 (선택적)
+          schema:
+            type: string
+            enum: ["politics", "economy", "society", "culture", "international", "technology"]
       responses:
         '200':
           description: 성공적으로 토픽 목록을 반환
@@ -843,7 +1024,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 토픽 구독 (미구현)
+      summary: 토픽 구독
       description: 사용자가 특정 토픽을 구독합니다.
       tags:
         - 토픽
@@ -882,7 +1063,7 @@ paths:
     delete:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 토픽 구독 취소 (미구현)
+      summary: 토픽 구독 취소
       description: 사용자가 특정 토픽의 구독을 취소합니다.
       tags:
         - 토픽
@@ -919,12 +1100,60 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
+  /topics/{topicId}/issues:
+    get:
+      x-amazon-apigateway-integration:
+        $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 특정 토픽의 이슈 목록 조회
+      description: 특정 토픽에 속한 이슈들의 목록을 페이징하여 반환합니다.
+      tags:
+        - 토픽
+      parameters:
+        - name: topicId
+          in: path
+          description: 토픽 ID
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 반환할 이슈 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastIssueId
+          in: query
+          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 토픽의 이슈 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/IssueListResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
   /topics/detail/{topicId}:
     get:
       x-amazon-apigateway-integration:
         $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 특정 토픽 상세 정보 조회 (미구현)
-      description:  특정 토픽의 상세 정보를 반환합니다. 각 토픽에는 속한 카테고리와 이슈 수, 구독 상태가 포함됩니다.
+      summary:  특정 토픽 상세 정보 조회
+      description:  특정 토픽의 상세 정보를 반환합니다. 각 토픽에는 속한 이슈들과 관련 토픽들이 포함됩니다.
       tags:
         - 토픽
       parameters:
@@ -956,7 +1185,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 구독 토픽 상세 목록 조회 (미구현)
+      summary: 사용자 구독 토픽 상세 목록 조회
       description: 사용자가 구독한 토픽들의 상세 정보를 반환합니다. 각 토픽에는 속한 이슈들과 관련 토픽들이 포함됩니다.
       tags:
         - 토픽
@@ -980,7 +1209,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/TopicDetailListResponse'
+                $ref: './components.yml#/schemas/TopicListResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /topics/subscribed/issues:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 사용자 구독 토픽의 이슈 목록 조회
+      description: 사용자가 구독한 토픽에서 발행된 이슈들의 목록을 페이징하여 반환합니다.
+      tags:
+        - 토픽
+      parameters:
+        - name: limit
+          in: query
+          description: 반환할 이슈 수 (기본값 10)
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: lastIssueId
+          in: query
+          description: 마지막으로 읽은 이슈의 아이디 (페이징용)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 구독 토픽과 이슈 목록을 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/IssueListResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
@@ -996,7 +1265,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
-      summary: 사용자 등록 (미구현)
+      summary: 사용자 등록
       description: |
         JWT 토큰으로 이메일을 받아 새로운 사용자를 등록합니다.
         요청 본문에 선택적으로 정치성향과 세부 정치성향을 포함할 수 있습니다.
@@ -1025,6 +1294,333 @@ paths:
           $ref: './components.yml#/responses/TooManyRequests'
         '500':
           $ref: './components.yml#/responses/ServerError'
+  
+  /admin/cluster-info:
+    post:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/admin-lambda-integration"
+      summary: 클러스터 인포 트리거
+      description: |
+        클러스터 인포를 트리거합니다.
+      tags:
+        - 관리자
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueIds:
+                  type: array
+                  items:
+                    type: string
+                    example: "issue-12345"
+              description: 이슈 ID 목록을 포함합니다. 클러스터 인포를 생성할 이슈들의 ID를 배열로 전달합니다.
+              required:
+                - issueIds
+      responses:
+        '200':
+          description: 성공적으로 처리 결과를 반환
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+
+  /admin/issues:
+    post:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 생성 (관리자 전용)
+      description: 새로운 이슈를 생성합니다.
+      tags:
+        - 관리자
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminIssueCreateRequest'
+      responses:
+        '200':
+          description: 성공적으로 이슈 생성
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}:
+    patch:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 수정 (관리자 전용)
+      description: 특정 이슈의 정보를 수정합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 수정할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminIssueUpdateRequest'
+      responses:
+        '200':
+          description: 성공적으로 이슈 수정
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈 삭제 (관리자 전용)
+      description: 특정 이슈를 삭제합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 삭제할 이슈 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 이슈 삭제
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}/articles:
+    patch:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈에 기사 추가 (관리자 전용)
+      description: 특정 이슈에 기사를 추가합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 기사를 추가할 이슈 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminArticleAddRequest'
+      responses:
+        '200':
+          description: 성공적으로 기사 추가
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/issues/{issueId}/articles/{articleId}:
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 이슈에서 기사 제거 (관리자 전용)
+      description: 특정 이슈에서 기사를 제거합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 기사를 제거할 이슈 ID
+          required: true
+          schema:
+            type: string
+        - name: articleId
+          in: path
+          description: 제거할 기사 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공적으로 기사 제거
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+  /admin/articles/{articleId}:
+    patch:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 기사 수정 (관리자 전용)
+      description: 특정 기사의 정보를 수정합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: articleId
+          in: path
+          description: 수정할 기사 ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yml#/schemas/AdminArticleUpdateRequest'
+      responses:
+        '200':
+          description: 성공적으로 기사 수정
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+  
+  /admin/make-cluster:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/admin-cluster-invocation"
+      summary: 클러스터 생성 (관리자 전용)
+      description: |
+        클러스터를 생성합니다. 이 API는 클러스터링 작업을 트리거합니다.
+        클러스터링 작업은 백그라운드에서 실행되며, 완료 후 클러스터 정보를 조회할 수 있습니다.
+      tags:
+        - 관리자
+      responses:
+        '200':
+          description: 성공적으로 클러스터 생성 요청
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
+
+  /admin/issues/{issueId}/similar-articles:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 특정 이슈와 유사한 기사 조회 (관리자 전용)
+      description: 특정 이슈의 centroid를 기준으로 유사한 기사들을 정렬해서 반환합니다.
+      tags:
+        - 관리자
+      parameters:
+        - name: issueId
+          in: path
+          description: 기준 이슈 ID
+          required: true
+          schema:
+            type: string
+        - name: days
+          in: query
+          description: 최근 N일간의 기사만 조회 (기본값 2일)
+          schema:
+            type: integer
+            default: 2
+            minimum: 1
+            maximum: 30
+        - name: limit
+          in: query
+          description: 반환할 기사 수 (기본값 20)
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: 성공적으로 유사 기사 조회
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/AdminSimilarArticlesResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '404':
+          $ref: './components.yml#/responses/NotFound'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
 
 components:
   securitySchemes:
@@ -1040,6 +1636,19 @@ components:
     lambda-integration:
       type: aws_proxy
       httpMethod: POST
-      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_prod/invocations
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_crud_dev/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
+    admin-lambda-integration:
+      type: aws_proxy
+      httpMethod: POST
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_cluster_info_dev/invocations
+      payloadFormatVersion: "2.0"
+      credentials: arn:aws:iam::137470820403:role/API_GATEWAY
+    admin-cluster-invocation:
+      type: aws_proxy
+      httpMethod: POST
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_clustering_dev/invocations
+      payloadFormatVersion: "2.0"
+      credentials: arn:aws:iam::137470820403:role/API_GATEWAY
+    
