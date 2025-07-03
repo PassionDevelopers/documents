@@ -1545,6 +1545,33 @@ paths:
           $ref: './components.yml#/responses/NotFound'
         '500':
           $ref: './components.yml#/responses/ServerError'
+  
+  /admin/make-cluster:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/admin-cluster-invocation"
+      summary: 클러스터 생성 (관리자 전용)
+      description: |
+        클러스터를 생성합니다. 이 API는 클러스터링 작업을 트리거합니다.
+        클러스터링 작업은 백그라운드에서 실행되며, 완료 후 클러스터 정보를 조회할 수 있습니다.
+      tags:
+        - 관리자
+      responses:
+        '200':
+          description: 성공적으로 클러스터 생성 요청
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
 
   /admin/issues/{issueId}/similar-articles:
     get:
@@ -1618,3 +1645,10 @@ components:
       uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_cluster_info_dev/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
+    admin-cluster-invocation:
+      type: aws_proxy
+      httpMethod: POST
+      uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_clustering_dev/invocations
+      payloadFormatVersion: "2.0"
+      credentials: arn:aws:iam::137470820403:role/API_GATEWAY
+    
