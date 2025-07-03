@@ -1164,7 +1164,6 @@ schemas:
       - preview
       - url
       - publishedAt
-      - issueId
       - category
       - source
     additionalProperties: false

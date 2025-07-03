@@ -14,7 +14,7 @@ servers:
     description: 프로덕션 서버
 
 security:
-  - FirebaseJWT: []
+  - bearerAuth: []
 
 tags:
   - name: 이슈
@@ -1624,6 +1624,10 @@ paths:
 
 components:
   securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
     FirebaseJWT:
       type: oauth2
       flows: {}
@@ -1653,4 +1657,3 @@ components:
       uri: arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:137470820403:function:dasi_news_clustering_prod/invocations
       payloadFormatVersion: "2.0"
       credentials: arn:aws:iam::137470820403:role/API_GATEWAY
-    
