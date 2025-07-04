@@ -365,6 +365,12 @@ schemas:
     type: object
     description: 정치성향 조회 응답
     properties:
+      nickname:
+        type: string
+        minLength: 1
+        maxLength: 50
+        description: 사용자 닉네임
+        example: "유능한백엔드개발자123"
       perspective:
         type: string
         enum: ["left", "center_left", "center", "center_right", "right"]
