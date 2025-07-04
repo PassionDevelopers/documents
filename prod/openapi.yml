@@ -1261,6 +1261,34 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
+  /user/delete-account:
+    delete:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 사용자 계정 삭제
+      description: |
+        사용자의 계정을 삭제합니다. 이 작업은 되돌릴 수 없습니다.
+        JWT 토큰으로 사용자를 식별하며, 조작 방지를 위해 서버에서 검증합니다.
+      tags:
+        - 사용자
+      responses:
+        '200':
+          description: 성공적으로 계정 삭제
+          content:
+            application/json:
+              schema:
+                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+        '400':
+          $ref: './components.yml#/responses/BadRequest'
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '429':
+          $ref: './components.yml#/responses/TooManyRequests'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
   /user/is-exists:
     get:
       x-amazon-apigateway-integration:
