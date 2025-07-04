@@ -1261,6 +1261,32 @@ paths:
         '500':
           $ref: './components.yml#/responses/ServerError'
 
+  /user/is-exists:
+    get:
+      x-amazon-apigateway-integration:
+          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+      summary: 사용자 존재 여부 확인
+      description: JWT 토큰으로 사용자의 존재 여부를 확인합니다.
+      tags:
+        - 사용자
+      responses:
+        '200':
+          description: 사용자가 존재함
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+                    example: true
+        '401':
+          $ref: './components.yml#/responses/Unauthorized'
+        '403':
+          $ref: './components.yml#/responses/Forbidden'
+        '500':
+          $ref: './components.yml#/responses/ServerError'
+
   /user/register:
     post:
       x-amazon-apigateway-integration:
