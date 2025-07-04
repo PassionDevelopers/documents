@@ -1267,6 +1267,7 @@ paths:
           $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
       summary: 사용자 존재 여부 확인
       description: JWT 토큰으로 사용자의 존재 여부를 확인합니다.
+      deprecated: true
       tags:
         - 사용자
       responses:
