@@ -435,7 +435,7 @@ schemas:
     type: object
     description: 사용자 정치성향 기록 컬렉션 모델
     properties:
-      userEmail:
+      userId:
         type: string
         description: 사용자 이메일
         example: "user@example.com"
@@ -447,7 +447,7 @@ schemas:
       politicalPreferenceDetail:
         $ref: '#/schemas/PoliticalPreferenceDetailResponse'
     required:
-      - userEmail
+      - userId
       - recordedAt
       - politicalPreferenceDetail
     additionalProperties: false
