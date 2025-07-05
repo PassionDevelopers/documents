@@ -15,6 +15,7 @@ servers:
 
 security:
   - FirebaseJWT: []
+  - bearerAuth: []
 
 tags:
   - name: 이슈
@@ -1679,6 +1680,14 @@ paths:
 
 components:
   securitySchemes:
+    bearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+        description: |
+          JWT 토큰을 사용한 인증입니다.
+          Authorization 헤더에 'Bearer {token}' 형식으로 전달해주세요.
+          토큰에는 사용자 이메일 정보가 포함되어 있습니다.
     FirebaseJWT:
       type: oauth2
       flows: {}
