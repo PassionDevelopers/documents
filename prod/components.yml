@@ -789,6 +789,19 @@ schemas:
     required:
       - perspective
     additionalProperties: false
+  
+  Tag:
+    properties:
+      name:
+        type: string
+        minLength: 1
+        maxLength: 50
+        description: 태그 이름
+        example: "심한 대립"
+      color:
+        type: string
+        description: 태그 색상
+        example: "#000000"
 
   IssueResponse:
     type: object
@@ -802,6 +815,21 @@ schemas:
         type: string
         description: 이슈 제목
         example: "미국과 중국 간 무역 분쟁 심화"
+      tags:
+        type: array
+        items:
+          $ref: '#/schemas/Tag'
+        description: 이슈 관련 태그 목록
+        example: [
+          {
+            "name": "심한 대립",
+            "color": "#FF0000"
+          },
+          {
+            "name": "경제",
+            "color": "#00FF00"
+          }
+        ]
       category:
         type: string
         enum: ["politics", "economy", "society", "culture", "international", "technology"]
@@ -885,6 +913,7 @@ schemas:
       - _id
       - title
       - category
+      - tags
       - summary
       - createdAt
       - view

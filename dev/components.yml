@@ -366,11 +366,11 @@ schemas:
     description: 정치성향 조회 응답
     properties:
       nickname:
-        type: string
-        minLength: 1
-        maxLength: 50
-        description: 사용자 닉네임
-        example: "유능한백엔드개발자123"
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: 사용자 닉네임
+          example: "유능한백엔드개발자123"
       perspective:
         type: string
         enum: ["left", "center_left", "center", "center_right", "right"]
@@ -789,6 +789,19 @@ schemas:
     required:
       - perspective
     additionalProperties: false
+  
+  Tag:
+    properties:
+      name:
+        type: string
+        minLength: 1
+        maxLength: 50
+        description: 태그 이름
+        example: "심한 대립"
+      color:
+        type: string
+        description: 태그 색상
+        example: "#000000"
 
   IssueResponse:
     type: object
@@ -798,18 +811,1441 @@ schemas:
         type: string
         description: 이슈 ID
         example: "507f1f77bcf86cd799439011"
-      tags:
-        type: array
-        items:
-          type: string
-          minLength: 1
-          maxLength: 50
-        description: 이슈 태그 목록
-        example: ["사각지대", "심한대립"]
       title:
         type: string
         description: 이슈 제목
         example: "미국과 중국 간 무역 분쟁 심화"
+      tags:
+        type: array
+        items:
+          $ref: '#/schemas/Tag'
+        description: 이슈 관련 태그 목록
+        example: [
+          {
+            "name": "심한 대립",
+            "color": "#FF0000"
+          },
+          {
+            "name": "경제",
+            "color": "#00FF00"
+          }
+        ]
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 이슈 카테고리
+        example: "international"
+      summary:
+        type: string
+        description: 이슈 요약
+        example: "미국과 중국 간 무역 관계가 악화되며 글로벌 경제에 영향을 미치고 있습니다."
+      imageUrl:
+        type: string
+        format: uri
+        description: 이슈 관련 이미지 URL
+        example: "https://example-cdn.com/images/trade-war.jpg"
+        nullable: true
+      keywords:
+        type: array
+        items:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description: 이슈 관련 키워드
+        example: ["미국", "중국", "무역분쟁"]
+      createdAt:
+        type: string
+        format: date-time
+        description: 생성 시간
+        example: "2025-05-20T09:30:00Z"
+      view:
+        type: integer
+        minimum: 0
+        description: 조회 수
+        example: 1500
+      leftLikeCount:
+        type: integer
+        minimum: 0
+        description: 좌성향 좋아요 수
+        example: 200
+      centerLikeCount:
+        type: integer
+        minimum: 0
+        description: 중도 좋아요 수
+        example: 150
+      rightLikeCount:
+        type: integer
+        minimum: 0
+        description: 우성향 좋아요 수
+        example: 100
+      coverageSpectrum:
+        $ref: '#/schemas/CoverageSpectrum'
+      updatedAt:
+        type: string
+        format: date-time
+        description: 업데이트 시간
+        example: "2025-05-21T08:15:00Z"
+        nullable: true
+      isSubscribed:
+        type: boolean
+        description: 사용자의 이슈 구독 여부
+        example: true
+      sources:
+        type: array
+        items:
+          $ref: '#/schemas/SourceInfoResponse'
+        description: 이슈에 관련된 미디어 소스 목록
+        example: [
+          {
+            "_id": "507f1f77bcf86cd799439013",
+            "name": "대한일보",
+            "perspective": "center",
+            "logoUrl": "https://cdn.example-news.com/logo.png"
+          },
+          {
+            "_id": "507f1f77bcf86cd799439014",
+            "name": "중앙뉴스",
+            "perspective": "right",
+            "logoUrl": "https://cdn.example-news.com/logo2.png"
+          }
+        ]
+    required:
+      - _id
+      - title
+      - category
+      - summary
+      - createdAt
+      - view
+      - coverageSpectrum
+      - leftLikeCount
+      - tags
+      - centerLikeCount
+      - rightLikeCount
+      - keywords
+    additionalProperties: false
+
+  IssueEvaluatedResponse:
+    type: object
+    description: 이슈 응답 모델 (사용자 평가 포함)
+    allOf:
+      - $ref: '#/schemas/IssueResponse'
+      - type: object
+        properties:
+          userEvaluatedPerspective:
+            type: string
+            enum: ["left", "center", "right"]
+            description: 사용자가 평가한 이슈의 정치적 성향
+            example: "center"
+        required:
+          - userEvaluatedPerspective
+        additionalProperties: false
+
+  IssueEvaluatedListResponse:
+    type: object
+    description: 이슈 목록 응답 모델 (사용자 평가 포함)
+    properties:
+      issues:
+        type: array
+        items:
+          $ref: '#/schemas/IssueEvaluatedResponse'
+        description: 이슈 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastIssueId:
+        type: string
+        description: 마지막 이슈 ID (페이징용)
+        example: "507f1f77bcf86cd799439011"
+    required:
+      - issues
+      - hasMore
+      - lastIssueId
+    additionalProperties: false
+
+  IssueDetailResponse:
+    allOf:
+      - $ref: '#/schemas/IssueResponse'
+      - type: object
+        description: 이슈 상세 응답 모델
+        properties:
+          leftSummary:
+            type: string
+            description: 좌성향 관점 요약
+            example: "미국의 중국에 대한 새로운 관세 부과는 보호무역주의적 조치입니다."
+          centerSummary:
+            type: string
+            description: 중도 관점 요약
+            example: "미국과 중국 간 무역 분쟁이 더욱 심화되고 있습니다."
+          rightSummary:
+            type: string
+            description: 우성향 관점 요약
+            example: "미국의 중국에 대한 관세 부과는 필요한 조치입니다."
+          biasComparison:
+            type: string
+            description: 편향 비교 요약
+            example: "좌성향은 보호무역주의를 비판하며, 우성향은 국가 안보를 강조합니다."
+          leftKeywords:
+            type: array
+            items:
+              type: string
+              minLength: 1
+              maxLength: 200
+            description: 좌성향 키워드
+            example: ["보호무역주의", "다자간협력"]
+            nullable: true
+          centerKeywords:
+            type: array
+            items:
+              type: string
+              minLength: 1
+              maxLength: 200
+            description: 중도 키워드
+            example: ["글로벌경제", "불확실성"]
+            nullable: true
+          rightKeywords:
+            type: array
+            items:
+              type: string
+              minLength: 1
+              maxLength: 200
+            description: 우성향 키워드
+            example: ["국가안보", "산업보호"]
+            nullable: true
+          nextIssueIds:
+            type: array
+            items:
+              type: string
+              minLength: 1
+              description: 다음 이슈 ID 목록
+              example: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"]
+          articles:
+            $ref: '#/schemas/ArticleListResponse'
+        required:
+          - leftSummary
+          - centerSummary
+          - rightSummary
+          - biasComparison
+        additionalProperties: false
+
+  HotIssueResponse:
+    type: object
+    description: 핫이슈 응답 모델 (이미지 URL 필수)
+    properties:
+      _id:
+        type: string
+        description: 이슈 ID
+        example: "507f1f77bcf86cd799439011"
+      title:
+        type: string
+        description: 이슈 제목
+        example: "미국과 중국 간 무역 분쟁 심화"
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 이슈 카테고리
+        example: "international"
+      summary:
+        type: string
+        description: 이슈 요약
+        example: "미국과 중국 간 무역 관계가 악화되며 글로벌 경제에 영향을 미치고 있습니다."
+      imageUrl:
+        type: string
+        format: uri
+        description: 핫이슈 관련 이미지 URL (필수)
+        example: "https://example-cdn.com/images/trade-war.jpg"
+      keywords:
+        type: array
+        items:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description: 이슈 관련 키워드
+        example: ["미국", "중국", "무역분쟁"]
+      createdAt:
+        type: string
+        format: date-time
+        description: 생성 시간
+        example: "2025-05-20T09:30:00Z"
+      view:
+        type: integer
+        minimum: 0
+        description: 조회 수
+        example: 1500
+      leftLikeCount:
+        type: integer
+        minimum: 0
+        description: 좌성향 좋아요 수
+        example: 200
+      centerLikeCount:
+        type: integer
+        minimum: 0
+        description: 중도 좋아요 수
+        example: 150
+      rightLikeCount:
+        type: integer
+        minimum: 0
+        description: 우성향 좋아요 수
+        example: 100
+      coverageSpectrum:
+        $ref: '#/schemas/CoverageSpectrum'
+      updatedAt:
+        type: string
+        format: date-time
+        description: 업데이트 시간
+        example: "2025-05-21T08:15:00Z"
+        nullable: true
+    required:
+      - _id
+      - title
+      - category
+      - summary
+      - leftLikeCount
+      - centerLikeCount
+      - rightLikeCount
+      - imageUrl
+      - createdAt
+      - view
+      - coverageSpectrum
+      - keywords
+    additionalProperties: false
+
+  IssueListResponse:
+    type: object
+    description: 이슈 목록 응답 모델
+    properties:
+      issues:
+        type: array
+        items:
+          $ref: '#/schemas/IssueResponse'
+        description: 이슈 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastIssueId:
+        type: string
+        description: 마지막 이슈 ID (페이징용)
+        example: "507f1f77bcf86cd799439011"
+    required:
+      - issues
+      - hasMore
+      - lastIssueId
+    additionalProperties: false
+
+  IssueQueryParamsResponse:
+    type: object
+    description: 이슈 쿼리 파라미터 목록 응답 모델
+    properties:
+      queryParams:
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+          description: 쿼리 파라미터 이름과 뜻
+          example: ["daily", "데일리"]
+        description: /issues 엔드포인트에서 사용 가능한 type 쿼리 파라미터 목록
+        example: [["daily","데일리"], ["for-you", "폴 유"], ["hot", "핫"]]
+    required:
+      - queryParams
+    additionalProperties: false
+
+  HotIssueListResponse:
+    type: object
+    description: 핫이슈 목록 응답 모델
+    properties:
+      issues:
+        type: array
+        items:
+          $ref: '#/schemas/HotIssueResponse'
+        description: 핫이슈 목록
+      totalCount:
+        type: integer
+        minimum: 0
+        description: 전체 핫이슈 개수
+        example: 5
+    required:
+      - issues
+      - totalCount
+    additionalProperties: false
+
+  # IssueDetailFullResponse:
+  #   type: object
+  #   description: 이슈 상세 전체 응답 모델
+  #   properties:
+  #     issue:
+  #       $ref: '#/schemas/IssueDetailResponse'
+  #     articles:
+  #       $ref: '#/schemas/ArticleListResponse'
+  #   required:
+  #     - issue
+  #     - articles
+  #   additionalProperties: false
+
+  # ============== 기사 관련 모델 ==============
+  ArticleResponse:
+    type: object
+    description: 기사 응답 모델
+    properties:
+      _id:
+        type: string
+        description: 기사 ID
+        example: "507f1f77bcf86cd799439012"
+      title:
+        type: string
+        description: 기사 제목
+        example: "미국의 새로운 관세 정책, 글로벌 시장에 미치는 영향"
+      preview:
+        type: string
+        description: 기사 프리뷰
+        example: "미국이 중국산 제품에 새로운 관세를 부과하기로 결정했습니다..."
+      url:
+        type: string
+        format: uri
+        description: 기사 URL
+        example: "https://example-news.com/articles/123"
+      reporter:
+        type: string
+        description: 기자 이름
+        example: "김기자"
+        nullable: true
+      publishedAt:
+        type: string
+        format: date-time
+        description: 발행 시간
+        example: "2025-05-20T14:30:00Z"
+      issueId:
+        type: string
+        description: 관련 이슈 ID
+        example: "507f1f77bcf86cd799439011"
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 기사 카테고리
+        example: "international"
+      imageUrl:
+        type: string
+        format: uri
+        description: 기사 이미지 URL
+        example: "https://example-news.com/images/article123.jpg"
+        nullable: true
+      source:
+        $ref: '#/schemas/SourceInfoResponse'
+    required:
+      - _id
+      - title
+      - preview
+      - url
+      - publishedAt
+      - category
+      - source
+    additionalProperties: false
+
+  ArticleListResponse:
+    type: object
+    description: 기사 목록 응답 모델
+    properties:
+      articles:
+        type: array
+        items:
+          $ref: '#/schemas/ArticleResponse'
+        description: 기사 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastArticleId:
+        type: string
+        description: 마지막 기사 ID (페이징용)
+        example: "507f1f77bcf86cd799439012"
+    required:
+      - articles
+      - hasMore
+      - lastArticleId
+    additionalProperties: false
+
+  SourcesWithArticlesResponse:
+    type: object
+    description: 소스 목록과 기사 목록을 포함하는 응답 모델
+    properties:
+      sources:
+        type: array
+        items:
+          $ref: '#/schemas/SourceInfoResponse'
+        description: 미디어 소스 목록
+        example: [
+          {
+            "_id": "507f1f77bcf86cd799439013",
+            "name": "대한일보",
+            "perspective": "center",
+            "logoUrl": "https://cdn.example-news.com/logo.png"
+          },
+          {
+            "_id": "507f1f77bcf86cd799439014",
+            "name": "중앙뉴스",
+            "perspective": "right",
+            "logoUrl": "https://cdn.example-news.com/logo2.png"
+          }
+        ]
+      articles:
+        $ref: '#/schemas/ArticleListResponse'
+    required:
+      - sources
+      - articles
+    additionalProperties: false
+
+  TopicsWithIssuesResponse:
+    type: object
+    description: 토픽 목록과 이슈 목록을 포함하는 응답 모델
+    properties:
+      topics:
+        $ref: '#/schemas/TopicListResponse'
+      issues:
+        $ref: '#/schemas/IssueListResponse'
+    required:
+      - topics
+      - issues
+    additionalProperties: false
+
+  # ============== 에러 관련 모델 ==============
+  ErrorDetail:
+    type: object
+    description: 에러 상세 정보
+    properties:
+      field:
+        type: string
+        description: 오류 필드
+        example: "perspective"
+      message:
+        type: string
+        description: 오류 메시지
+        example: "유효한 정치적 성향 값이 아닙니다."
+      value:
+        description: 오류 값
+        example: "invalid_value"
+        nullable: true
+    required:
+      - field
+      - message
+    additionalProperties: false
+
+  ErrorResponse:
+    type: object
+    description: 에러 응답 모델
+    properties:
+      code:
+        type: string
+        description: 오류 코드
+        example: "INVALID_PARAMETER"
+      message:
+        type: string
+        description: 오류 메시지
+        example: "유효하지 않은 파라미터가 포함되어 있습니다"
+      timestamp:
+        type: string
+        format: date-time
+        description: 오류 발생 시간
+        example: "2025-06-06T12:00:00Z"
+      details:
+        type: array
+        items:
+          $ref: '#/schemas/ErrorDetail'
+        description: 오류 상세 정보
+        nullable: true
+    required:
+      - code
+      - message
+      - timestamp
+    additionalProperties: false
+
+responses:
+  BadRequest:
+    description: 잘못된 요청
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/ErrorResponse'
+
+  NotFound:
+    description: 리소스를 찾을 수 없음
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/ErrorResponse'
+
+  TooManyRequests:
+    description: 너무 많은 요청
+    headers:
+      Retry-After:
+        schema:
+          type: integer
+        description: 재시도 대기 시간(초)
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/ErrorResponse'
+
+  Unauthorized:
+    description: 인증 실패 - JWT 토큰이 유효하지 않거나 없음
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/ErrorResponse'
+        example:
+          code: "AUTHENTICATION_FAILED"
+          message: "유효하지 않은 JWT 토큰입니다"
+          timestamp: "2025-06-06T12:00:00Z"
+
+  Forbidden:
+    description: 권한 없음 - 유효한 토큰이지만 접근 권한이 없음
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/ErrorResponse'
+        example:
+          code: "ACCESS_DENIED"
+          message: "해당 리소스에 접근할 권한이 없습니다"
+          timestamp: "2025-06-06T12:00:00Z"
+
+  ServerError:
+    description: 서버 오류
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/ErrorResponse'
+schemas:
+  # ============== 공통/기본 모델 ==============
+  CoverageSpectrum:
+    type: object
+    description: 정치적 스펙트럼 분포
+    properties:
+      left:
+        type: integer
+        minimum: 0
+        description: 좌성향(left, center_left) 기사 개수
+        example: 5
+      center_left:
+        type: integer
+        minimum: 0
+        description: 중도 좌성향 기사 개수
+        example: 2
+      center:
+        type: integer
+        minimum: 0
+        description: 중도 성향 기사 개수
+        example: 3
+      center_right:
+        type: integer
+        minimum: 0
+        description: 중도 우성향 기사 개수
+        example: 3
+      right:
+        type: integer
+        minimum: 0
+        description: 우성향(center_right, right) 기사 개수
+        example: 4
+      total:
+        type: integer
+        minimum: 0
+        description: 전체 기사 개수
+        example: 12
+    required:
+      - left
+      - center
+      - right
+      - total
+    additionalProperties: false
+
+  CategoryInfo:
+    type: object
+    description: 미디어 소스의 카테고리 정보
+    properties:
+      name:
+        type: string
+        minLength: 1
+        maxLength: 200
+        description: 카테고리 이름
+        example: "정치"
+      url:
+        type: string
+        format: uri
+        maxLength: 2000
+        description: 카테고리 URL
+        example: "https://example-news.com/politics"
+    required:
+      - name
+      - url
+    additionalProperties: false
+
+  SourceInfo:
+    type: object
+    description: 기사 응답에 포함될 소스 정보
+    properties:
+      _id:
+        type: string
+        description: 미디어 소스 ID
+        example: "507f1f77bcf86cd799439013"
+      name:
+        type: string
+        description: 미디어 소스 이름
+        example: "대한일보"
+      perspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 정치적 성향
+        example: "center"
+      logoUrl:
+        type: string
+        maxLength: 2000
+        description: 미디어 소스 로고 이미지 URL
+        example: "https://cdn.example-news.com/logo.png"
+    required:
+      - _id
+      - name
+      - logoUrl
+      - perspective
+    additionalProperties: false
+  
+  SourceInfoResponse:
+    type: object
+    description: 미디어 소스 응답 모델
+    allOf:
+      - $ref: '#/schemas/SourceInfo'
+      - type: object
+        properties:
+          isSubscribed:
+            type: boolean
+            description: 사용자의 구독 여부
+            example: true
+        required:
+          - isSubscribed
+        additionalProperties: false
+
+  SourceInfoWithEvaluationResponse:
+    type: object
+    description: 미디어 소스 응답 모델
+    allOf:
+      - $ref: '#/schemas/SourceInfoResponse'
+      - type: object
+        properties:
+          evaluation:
+            type: string
+            enum: ["left", "center_left", "center", "center_right", "right"]
+            description: 사용자가 평가한 성향
+            example: true
+        required:
+          - evaluation
+        additionalProperties: false
+
+  SimpleSuccessResponse:
+    type: object
+    description: 간단한 성공 응답
+    properties:
+      message:
+        type: string
+        description: 성공 메시지
+        example: "작업이 성공적으로 완료되었습니다"
+      timestamp:
+        type: string
+        format: date-time
+        description: 작업 완료 시간
+        example: "2025-06-12T12:00:00Z"
+      data:
+        type: object
+        description: 추가 데이터 (선택적)
+        additionalProperties: true
+        nullable: true
+    required:
+      - message
+      - timestamp
+    additionalProperties: false
+
+  AdminIssueCreateRequest:
+    type: object
+    description: 새 이슈 생성 요청 (관리자 전용)
+    properties:
+      title:
+        type: string
+        description: 이슈 제목
+        example: "새로운 정치 이슈"
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 이슈 카테고리
+        example: "politics"
+      summary:
+        type: string
+        description: 이슈 요약
+        example: "새로운 정치 이슈에 대한 간략한 요약입니다."
+      keywords:
+        type: array
+        items:
+          type: string
+        description: 이슈 관련 키워드
+        example: ["정치", "선거"]
+      imageUrl:
+        type: string
+        format: uri
+        description: 이슈 관련 이미지 URL
+        example: "https://example.com/new_issue.jpg"
+      leftSummary:
+        type: string
+        description: 좌성향 관점 요약
+      centerSummary:
+        type: string
+        description: 중도 관점 요약
+      rightSummary:
+        type: string
+        description: 우성향 관점 요약
+      biasComparison:
+        type: string
+        description: 편향 비교 분석
+      leftKeywords:
+        type: array
+        items:
+          type: string
+      centerKeywords:
+        type: array
+        items:
+          type: string
+      rightKeywords:
+        type: array
+        items:
+          type: string
+      createdAt:
+        type: string
+        format: date-time
+        description: 생성 시간 (ISO 8601)
+      updatedAt:
+        type: string
+        format: date-time
+        description: 업데이트 시간 (ISO 8601)
+    required:
+      - title
+      - category
+    additionalProperties: false
+
+  AdminIssueUpdateRequest:
+    type: object
+    description: 이슈 수정 요청 (관리자 전용)
+    properties:
+      title:
+        type: string
+        description: 이슈 제목
+        example: "수정된 정치 이슈"
+      summary:
+        type: string
+        description: 이슈 요약
+        example: "수정된 정치 이슈에 대한 간략한 요약입니다."
+      keywords:
+        type: array
+        items:
+          type: string
+        description: 이슈 관련 키워드
+        example: ["정치", "선거", "개정"]
+      imageUrl:
+        type: string
+        format: uri
+        description: 이슈 관련 이미지 URL
+        example: "https://example.com/updated_issue.jpg"
+      leftSummary:
+        type: string
+        description: 좌성향 관점 요약
+      centerSummary:
+        type: string
+        description: 중도 관점 요약
+      rightSummary:
+        type: string
+        description: 우성향 관점 요약
+      biasComparison:
+        type: string
+        description: 편향 비교 분석
+      leftKeywords:
+        type: array
+        items:
+          type: string
+      centerKeywords:
+        type: array
+        items:
+          type: string
+      rightKeywords:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+
+  AdminArticleAddRequest:
+    type: object
+    description: 이슈에 기사 추가 요청 (관리자 전용)
+    properties:
+      articleIdList:
+        type: array
+        items:
+          type: string
+          example: "article-12345"
+        description: 이슈에 추가할 기사 ID 목록
+    required:
+      - articleIdList
+    additionalProperties: false
+
+  AdminArticleUpdateRequest:
+    type: object
+    description: 기사 수정 요청 (관리자 전용)
+    properties:
+      title:
+        type: string
+        description: 기사 제목
+        example: "수정된 기사 제목"
+      summary:
+        type: string
+        description: 기사 요약
+        example: "수정된 기사 요약입니다."
+      content:
+        type: string
+        description: 기사 내용
+      reporter:
+        type: string
+        description: 기자 이름
+      url:
+        type: string
+        format: uri
+        description: 기사 URL
+      imageUrl:
+        type: string
+        format: uri
+        description: 기사 이미지 URL
+      keywords:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+
+  AdminSimilarArticlesResponse:
+    type: object
+    description: 유사 기사 조회 응답 (관리자 전용)
+    properties:
+      message:
+        type: string
+        description: 응답 메시지
+        example: "유사한 기사들을 성공적으로 조회했습니다."
+      targetIssue:
+        $ref: '#/schemas/IssueResponse'
+        description: 기준 이슈 정보
+      similarArticles:
+        type: array
+        items:
+          allOf:
+            - $ref: '#/schemas/ArticleResponse'
+            - type: object
+              properties:
+                similarity:
+                  type: number
+                  format: float
+                  description: 기준 이슈와의 코사인 유사도
+                  example: 0.85
+        description: 유사 기사 목록 (유사도 포함)
+    required:
+      - message
+      - targetIssue
+      - similarArticles
+    additionalProperties: false
+
+  # ============== 사용자/인증 관련 모델 ==============
+  UserRegistrationRequest:
+    type: object
+    description: 새 사용자 등록 요청
+    properties:
+      perspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 사용자의 정치성향
+        default: "center"
+        example: "center"
+    additionalProperties: false
+
+  PoliticalPreferenceRequest:
+    type: object
+    description: 정치성향 설정 요청
+    properties:
+      perspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 사용자의 정치성향
+        example: "center"
+    required:
+      - perspective
+    additionalProperties: false
+
+  PoliticalPreferenceGetResponse:
+    type: object
+    description: 정치성향 조회 응답
+    properties:
+      nickname:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: 사용자 닉네임
+          example: "유능한백엔드개발자123"
+      perspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 사용자의 정치성향
+        example: "center"
+    required:
+      - perspective
+    additionalProperties: false
+
+  PoliticalPreferenceDetailResponse:
+    type: object
+    description: 사용자 상세 정치성향 응답
+    properties:
+      politics:
+        type: array
+        items:
+          type: integer
+        description: 정치 부문에서 [진보, 중도, 보수] 점수
+        example: [30, 40, 30]
+      economy:
+        type: array
+        items:
+          type: integer
+        description: 경제 부문에서 [진보, 중도, 보수] 점수
+        example: [20, 50, 30]
+      society:
+        type: array
+        items:
+          type: integer
+        description: 사회 부문에서 [진보, 중도, 보수] 점수
+        example: [25, 50, 25]
+      culture:
+        type: array
+        items:
+          type: integer
+        description: 생활/문화 부문에서 [진보, 중도, 보수] 점수
+        example: [35, 40, 25]
+      technology:
+        type: array
+        items:
+          type: integer
+        description: IT/과학 부문에서 [진보, 중도, 보수] 점수
+        example: [30, 50, 20]
+      international:
+        type: array
+        items:
+          type: integer
+        description: 세계 부문에서 [진보, 중도, 보수] 점수
+        example: [40, 40, 20]
+      overall:
+        type: array
+        items:
+          type: integer
+        description: 전체 부문에서 [진보, 중도, 보수] 점수
+        example: [30, 45, 25]
+
+    required:
+      - politics
+      - economy
+      - society
+      - culture
+      - technology
+      - international
+      - overall
+    additionalProperties: false
+
+  UserPoliticalPreferenceDetailHistory:
+    type: object
+    description: 사용자 정치성향 기록 컬렉션 모델
+    properties:
+      userId:
+        type: string
+        description: 사용자 이메일
+        example: "user@example.com"
+      recordedAt:
+        type: string
+        format: date-time
+        description: 기록된 시간
+        example: "2025-06-24T12:00:00Z"
+      politicalPreferenceDetail:
+        $ref: '#/schemas/PoliticalPreferenceDetailResponse'
+    required:
+      - userId
+      - recordedAt
+      - politicalPreferenceDetail
+    additionalProperties: false
+
+  PoliticalPreferenceDetailHistoryResponse:
+    type: object
+    description: 사용자 정치성향 기록 응답
+    properties:
+      hasMore:
+        type: boolean
+        description: 추가 기록 여부
+        example: true
+      lastRecordedAt:
+        type: string
+        format: date-time
+        description: 마지막 기록 시간
+        example: "2025-06-24T12:00:00Z"
+      history:
+        type: array
+        items:
+          $ref: '#/schemas/UserPoliticalPreferenceDetailHistory'
+        description: 정치성향 기록 목록
+    required:
+      - hasMore
+      - lastRecordedAt
+      - history
+    additionalProperties: false
+
+  WatchHistoryRequest:
+    type: object
+    description: 시청 기록 저장 요청
+    properties:
+      articleId:
+        type: string
+        minLength: 1
+        description: 시청한 기사의 ID
+        example: "507f1f77bcf86cd799439012"
+      issueId:
+        type: string
+        minLength: 1
+        description: 기사가 속한 이슈의 ID
+        example: "507f1f77bcf86cd799439011"
+    required:
+      - articleId
+      - issueId
+    additionalProperties: false
+
+  # ============== 토픽 관련 모델 ==============
+  RelatedTopicInfo:
+    type: object
+    description: 관련 토픽 정보
+    properties:
+      _id:
+        type: string
+        description: 관련 토픽 ID
+        example: "507f1f77bcf86cd799439015"
+      name:
+        type: string
+        description: 관련 토픽 이름
+        example: "대선"
+      isSubscribed:
+        type: boolean
+        description: 사용자의 구독 여부
+        example: true
+    required:
+      - _id
+      - name
+      - isSubscribed
+    additionalProperties: false
+
+  TopicResponse:
+    type: object
+    description: 토픽 응답 모델
+    properties:
+      _id:
+        type: string
+        description: 토픽 ID
+        example: "507f1f77bcf86cd799439014"
+      name:
+        type: string
+        minLength: 1
+        maxLength: 50
+        description: 토픽 이름
+        example: "북한"
+      category:
+        type: string
+        enum: ["politics", "economy", "society", "culture", "international", "technology"]
+        description: 토픽 카테고리
+        example: "international"
+      issuesCount:
+        type: integer
+        minimum: 0
+        description: 토픽에 속한 이슈 수
+        example: 125
+      isSubscribed:
+        type: boolean
+        description: 사용자의 토픽 구독 여부
+        example: true
+    required:
+      - _id
+      - name
+      - category
+      - issuesCount
+      - isSubscribed
+    additionalProperties: false
+
+  TopicListResponse:
+    type: object
+    description: 토픽 목록 응답 모델
+    properties:
+      topics:
+        type: array
+        items:
+          $ref: '#/schemas/TopicResponse'
+        description: 토픽 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastTopicId:
+        type: string
+        description: 마지막 토픽 ID (페이징용)
+        example: "507f1f77bcf86cd799439014"
+    required:
+      - topics
+      - hasMore
+      - lastTopicId
+    additionalProperties: false
+
+  TopicDetailResponse:
+    allOf:
+      - $ref: '#/schemas/TopicResponse'
+      - type: object
+        description: 토픽 상세 응답 모델
+        properties:
+          issues:
+            $ref: '#/schemas/IssueListResponse'
+          relatedTopics:
+            type: array
+            items:
+              $ref: '#/schemas/RelatedTopicInfo'
+            description: 관련 토픽 목록
+            example: [
+              {
+                "_id": "507f1f77bcf86cd799439015",
+                "name": "대선"
+              },
+              {
+                "_id": "507f1f77bcf86cd799439016", 
+                "name": "외교"
+              }
+            ]
+        required:
+          - issues
+          - relatedTopics
+        additionalProperties: false
+
+  TopicDetailListResponse:
+    type: object
+    description: 토픽 상세 목록 응답 모델
+    properties:
+      topics:
+        type: array
+        items:
+          $ref: '#/schemas/TopicDetailResponse'
+        description: 구독한 토픽 상세 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastTopicId:
+        type: string
+        description: 마지막 토픽 ID (페이징용)
+        example: "507f1f77bcf86cd799439014"
+    required:
+      - topics
+      - hasMore
+      - lastTopicId
+    additionalProperties: false
+
+  # ============== 미디어/매체 관련 모델 ==============
+  MediaPerspectiveEvaluationRequest:
+    type: object
+    description: 매체 정치성향 평가 요청
+    properties:
+      perspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 사용자가 평가하는 매체의 정치성향
+        example: "center_right"
+    required:
+      - perspective
+    additionalProperties: false
+
+  MediaResponse:
+    type: object
+    description: 매체 응답 모델
+    properties:
+      _id:
+        type: string
+        description: 매체 ID
+        example: "507f1f77bcf86cd799439013"
+      name:
+        type: string
+        minLength: 1
+        maxLength: 200
+        description: 매체 이름
+        example: "대한일보"
+      description:
+        type: string
+        maxLength: 1000
+        description: 매체에 대한 정보
+        example: "1963년 창간된 대한민국의 대표적인 종합일간지입니다."
+      perspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 매체의 정치적 성향
+        example: "center"
+      url:
+        type: string
+        format: uri
+        maxLength: 2000
+        description: 매체 웹사이트 URL
+        example: "https://www.daehan-daily.com"
+      logoUrl:
+        type: string
+        format: uri
+        maxLength: 2000
+        description: 매체 로고 이미지 URL
+        example: "https://cdn.daehan-daily.com/logo.png"
+        nullable: true
+      recentArticles:
+        $ref: '#/schemas/ArticleListResponse'
+      isSubscribed:
+        type: boolean
+        description: 사용자의 구독 여부
+        example: true
+      userEvaluatedPerspective:
+        type: string
+        enum: ["left", "center_left", "center", "center_right", "right"]
+        description: 현재 사용자가 평가한 매체의 정치적 성향
+        example: "center_right"
+        nullable: true
+    required:
+      - _id
+      - name
+      - description
+      - perspective
+      - url
+      - isSubscribed
+      - logoUrl
+      - recentIssues
+      - recentArticles
+    additionalProperties: false
+
+  MediaDetailResponse:
+    allOf:
+      - $ref: '#/schemas/MediaResponse'
+      - type: object
+        description: 매체 상세 응답 모델
+        properties:
+          aiEvaluatedPerspective:
+            type: string
+            enum: ["left", "center_left", "center", "center_right", "right"]
+            description: AI가 평가한 매체의 정치적 성향
+            example: "center_left"
+          expertEvaluatedPerspective:
+            type: string
+            enum: ["left", "center_left", "center", "center_right", "right"]
+            description: 전문가가 평가한 매체의 정치적 성향
+            example: "center"
+            nullable: true
+          publicEvaluatedPerspective:
+            type: integer
+            minimum: 0
+            maximum: 100
+            description: 대중들이 평가한 매체의 정치적 성향 (0=보수, 100=진보)
+            example: 100
+            nullable: true
+          followersCount:
+            type: integer
+            minimum: 0
+            description: 해당 매체를 구독한 사용자의 수
+            example: 1250
+          isSubscribed:
+            type: boolean
+            description: 사용자의 구독 여부
+            example: true
+          notificationEnabled:
+            type: boolean
+            description: 알림 설정 여부
+            example: false
+        required:
+          - aiEvaluatedPerspective
+          - totalIssuesCount
+          - isSubscribed
+          - notificationEnabled
+        additionalProperties: false
+
+  MediaListResponse:
+    type: object
+    description: 매체 목록 응답 모델
+    properties:
+      media:
+        type: array
+        items:
+          $ref: '#/schemas/MediaResponse'
+        description: 매체 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastMediaId:
+        type: string
+        description: 마지막 매체 ID (페이징용)
+        example: "507f1f77bcf86cd799439013"
+    required:
+      - media
+      - hasMore
+      - lastMediaId
+    additionalProperties: false
+
+  # ============== 이슈 관련 모델 ==============
+  IssueEvaluationRequest:
+    type: object
+    description: 이슈 정치성향 평가 요청
+    properties:
+      perspective:
+        type: string
+        enum: ["left", "center", "right"]
+        description: 사용자가 평가하는 이슈의 정치성향
+        example: "center"
+    required:
+      - perspective
+    additionalProperties: false
+  
+  Tag:
+    properties:
+      name:
+        type: string
+        minLength: 1
+        maxLength: 50
+        description: 태그 이름
+        example: "심한 대립"
+      color:
+        type: string
+        description: 태그 색상
+        example: "#000000"
+
+  IssueResponse:
+    type: object
+    description: 이슈 기본 응답 모델 (목록용)
+    properties:
+      _id:
+        type: string
+        description: 이슈 ID
+        example: "507f1f77bcf86cd799439011"
+      title:
+        type: string
+        description: 이슈 제목
+        example: "미국과 중국 간 무역 분쟁 심화"
+      tags:
+        type: array
+        items:
+          $ref: '#/schemas/Tag'
+        description: 이슈 관련 태그 목록
+        example: [
+          {
+            "name": "심한 대립",
+            "color": "#FF0000"
+          },
+          {
+            "name": "경제",
+            "color": "#00FF00"
+          }
+        ]
       category:
         type: string
         enum: ["politics", "economy", "society", "culture", "international", "technology"]
@@ -903,6 +2339,45 @@ schemas:
       - keywords
     additionalProperties: false
 
+  IssueEvaluatedResponse:
+    type: object
+    description: 이슈 응답 모델 (사용자 평가 포함)
+    allOf:
+      - $ref: '#/schemas/IssueResponse'
+      - type: object
+        properties:
+          userEvaluatedPerspective:
+            type: string
+            enum: ["left", "center", "right"]
+            description: 사용자가 평가한 이슈의 정치적 성향
+            example: "center"
+        required:
+          - userEvaluatedPerspective
+        additionalProperties: false
+
+  IssueEvaluatedListResponse:
+    type: object
+    description: 이슈 목록 응답 모델 (사용자 평가 포함)
+    properties:
+      issues:
+        type: array
+        items:
+          $ref: '#/schemas/IssueEvaluatedResponse'
+        description: 이슈 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastIssueId:
+        type: string
+        description: 마지막 이슈 ID (페이징용)
+        example: "507f1f77bcf86cd799439011"
+    required:
+      - issues
+      - hasMore
+      - lastIssueId
+    additionalProperties: false
+
   IssueDetailResponse:
     allOf:
       - $ref: '#/schemas/IssueResponse'
@@ -913,11 +2388,6 @@ schemas:
             type: string
             description: 좌성향 관점 요약
             example: "미국의 중국에 대한 새로운 관세 부과는 보호무역주의적 조치입니다."
-          userEvaluation:
-            type: string
-            enum: ["left", "center", "right"]
-            description: 사용자가 평가한 이슈의 정치적 성향
-            example: "center"
           centerSummary:
             type: string
             description: 중도 관점 요약
