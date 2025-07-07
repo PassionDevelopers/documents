@@ -895,6 +895,45 @@ schemas:
       - keywords
     additionalProperties: false
 
+  IssueEvaluatedResponse:
+    type: object
+    description: 이슈 응답 모델 (사용자 평가 포함)
+    allOf:
+      - $ref: '#/schemas/IssueResponse'
+      - type: object
+        properties:
+          userEvaluatedPerspective:
+            type: string
+            enum: ["left", "center", "right"]
+            description: 사용자가 평가한 이슈의 정치적 성향
+            example: "center"
+        required:
+          - userEvaluatedPerspective
+        additionalProperties: false
+
+  IssueEvaluatedListResponse:
+    type: object
+    description: 이슈 목록 응답 모델 (사용자 평가 포함)
+    properties:
+      issues:
+        type: array
+        items:
+          $ref: '#/schemas/IssueEvaluatedResponse'
+        description: 이슈 목록
+      hasMore:
+        type: boolean
+        description: 더 많은 데이터가 있는지 여부
+        example: true
+      lastIssueId:
+        type: string
+        description: 마지막 이슈 ID (페이징용)
+        example: "507f1f77bcf86cd799439011"
+    required:
+      - issues
+      - hasMore
+      - lastIssueId
+    additionalProperties: false
+
   IssueDetailResponse:
     allOf:
       - $ref: '#/schemas/IssueResponse'
