@@ -1265,6 +1265,15 @@ schemas:
       - lastArticleId
     additionalProperties: false
 
+  ImageUrlResponse:
+    type: object
+    description: 이미지 url 응답 모델
+    properties:
+      imageUrl:
+        type: string
+        format: uri
+        description: 이미지 url
+
   SourcesWithArticlesResponse:
     type: object
     description: 소스 목록과 기사 목록을 포함하는 응답 모델
