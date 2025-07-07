@@ -2212,26 +2212,25 @@ paths:
   /admin/image-url:
     post:
       x-amazon-apigateway-integration:
-          $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
+        $ref: "#/components/x-amazon-apigateway-integrations/lambda-integration"
       summary: 이미지 url 생성 (관리자 전용)
       description: 관리자가 이미지 url을 생성합니다.
       tags:
         - 관리자
-      parameters:
-        - name: keywords
-          in: body
-          description: 이미지 만들때 쓰일 키워드
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: 성공적으로 이미지 url을 반환
-          content:
-            application/json:
-              schema:
-                $ref: './components.yml#/schemas/ImageUrlResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keywords:
+                  type: array
+                  items:
+                    type: string
+                  description: 이미지 만들때 쓰일 키워드
+              required:
+                - keywords
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
