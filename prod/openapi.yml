@@ -2245,7 +2245,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yml#/schemas/SimpleSuccessResponse'
+                $ref: './components.yml#/schemas/ImageUrlResponse'
         '400':
           $ref: './components.yml#/responses/BadRequest'
         '401':
